@@ -504,11 +504,11 @@ $app->put('/updatebet/{id}', function(Request $request , Response $response, arr
 
 $app->put('/updatebetresult/{id}',function(Request $request, Response $response, array $args){
     $id = $args['id'];
-    $response_data = $request->getParsedBody();
-    $result = $response_data['result'];
-
+    $request_data = $request->getParsedBody();
+    $result = $request_data['result'];
+    $right_answer = $request_data['right_ans'];
     $db = new DbOperations;
-    if ($db->updateBetResult($result,$id)) {
+    if ($db->updateBetResult($result,$right_answer,$id)) {
         $response_data = array(); 
         $response_data['error'] = false; 
         $response_data['message'] = 'Bet Updated Successfully';
@@ -522,7 +522,7 @@ $app->put('/updatebetresult/{id}',function(Request $request, Response $response,
     }else{
         $response_data = array(); 
         $response_data['error'] = true; 
-        $response_data['message'] = 'Please try again later';
+        $response_data['message'] = 'No row affected';
         $response->write(json_encode($response_data));
         return $response
         ->withHeader('Content-type', 'application/json')
@@ -534,6 +534,38 @@ $app->put('/updatebetresult/{id}',function(Request $request, Response $response,
     ->withHeader('Content-type', 'application/json')
     ->withStatus(200);  
 });
+
+$app->put('/cancelbet/{id}',function(Request $request, Response $response, array $args){
+    $id = $args['id'];
+    $request_data = $request->getParsedBody();
+    $db = new DbOperations;
+    if ($db->cancelBet($id)) {
+        $response_data = array(); 
+        $response_data['error'] = false; 
+        $response_data['message'] = 'Bet Updated Successfully';
+        $bet = $db->getBetById($id);
+        $response_data['bet'] = $bet; 
+        $response->write(json_encode($response_data));
+        return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(200);  
+        
+    }else{
+        $response_data = array(); 
+        $response_data['error'] = true; 
+        $response_data['message'] = 'No row affected';
+        $response->write(json_encode($response_data));
+        return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(200);  
+
+    }
+    
+    return $response
+    ->withHeader('Content-type', 'application/json')
+    ->withStatus(200);  
+});
+
 
 $app->get('/allbets', function(Request $request, Response $response){
     $db = new DbOperations; 
@@ -610,7 +642,9 @@ $app->post('/setbetrate',function(Request $request, Response $response){
     ->withStatus(201); 
 });
 
-$app->get('/allbetratesbygroupmatchandbet', function(Request $request, Response $response){
+$app->get('/allbetratesbygroupmatchandbet/{bet_mode}/{user_type_id}', function(Request $request, Response $response, array $args){
+    $bet_mode_id = $args['bet_mode'];
+    $user_type_id = $args['user_type_id'];
     $db = new DbOperations;
     $array = array();
     $match_array = array();
@@ -618,28 +652,24 @@ $app->get('/allbetratesbygroupmatchandbet', function(Request $request, Response 
     foreach ($matches as $match) {
         $bet_match_array = array();
         $id = $match['id'];
-        $bets = $db->getAllBetsByMatch($id);
+        $bets = $db->getAllBetsByMatchAndBetMode($id,$bet_mode_id);
         foreach ($bets as $bet) {
             $bet_array = array();
             $bet_rate_array = array();
             
             $bet_id = $bet['bet_id'];
-            $bet_rates = $db->getBetRateByBetId($bet_id);
+            $bet_rates = $db->getBetRateByBetIdAndUserType($bet_id,$user_type_id);
             foreach ($bet_rates as $bet_rate ) {
-                //$bet_rate_array['bet_rate'] = $bet_rate;
                 array_push($bet_rate_array, $bet_rate);
             }
             $bet_array['bet'] = $bet;
             $bet_array['bet_rates'] = $bet_rate_array;
-            //array_push($bet_array, $bet);
-            //array_push($bet_array, $bet_rate_array);
             array_push($bet_match_array, $bet_array);
         }
         
         $match_array['match'] = $match;
         $match_array['bets'] = $bet_match_array;
         array_push($array, $match_array);
-        //array_push($match_array, $bet_match_array);
     }
     $message = array();
     $message['error'] = true; 
@@ -1109,10 +1139,10 @@ $app->post('/createuser', function(Request $request, Response $response){
     $pin_id = $request_data['pin_id'];
     $trade_balance = $request_data['trade_balance'];
 
-    $hash_password = password_hash($password, PASSWORD_DEFAULT);
+    //$hash_password = password_hash($password, PASSWORD_DEFAULT);
 
     $db = new DbOperations;
-    $result = $db->createUser($name, $username, $email, $mobile, $hash_password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin_id, $trade_balance);
+    $result = $db->createUser($name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin_id, $trade_balance);
 
     if ($result == DATA_INSERTED) {
 
@@ -1163,6 +1193,68 @@ $app->post('/createuser', function(Request $request, Response $response){
 
 });
 
+$app->post('/userlogin', function(Request $request, Response $response){
+        $request_data = $request->getParsedBody(); 
+        $email = $request_data['email'];
+        $password = $request_data['password'];
+        
+        $db = new DbOperations; 
+        $result = $db->userLogin($email, $password);
+        if($result == USER_AUTHENTICATED){
+            $user = $db->getUserByEmail($email);
+            $response_data = array();
+            $response_data['error']=false; 
+            $response_data['message'] = 'Login Successful';
+            $response_data['user']=$user; 
+            $response->write(json_encode($response_data));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+        }else if($result == USER_UNAUTHENTICATED){
+            $response_data = array();
+            $response_data['error']=true; 
+            $response_data['message'] = 'Email or password does not match';
+            $response->write(json_encode($response_data));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+        }
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(422);    
+});
+
+$app->post('/adminlogin', function(Request $request, Response $response){
+        $request_data = $request->getParsedBody(); 
+        $email = $request_data['email'];
+        $password = $request_data['password'];
+        
+        $db = new DbOperations; 
+        $result = $db->adminLogin($email, $password);
+        if($result == USER_AUTHENTICATED){
+            $user = $db->getAdminByEmail($email);
+            $response_data = array();
+            $response_data['error']=false; 
+            $response_data['message'] = 'Login Successful';
+            $response_data['admin']=$user; 
+            $response->write(json_encode($response_data));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+        }else if($result == USER_UNAUTHENTICATED){
+            $response_data = array();
+            $response_data['error']=true; 
+            $response_data['message'] = 'Email or password does not match';
+            $response->write(json_encode($response_data));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+        }
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(422);    
+});
+
 $app->post('/createpremiumuser', function(Request $request, Response $response){
 
 
@@ -1178,10 +1270,10 @@ $app->post('/createpremiumuser', function(Request $request, Response $response){
     $upazilla = $request_data['upazilla'];
     $up = $request_data['up'];
 
-    $hash_password = password_hash($password, PASSWORD_DEFAULT);
+    //$hash_password = password_hash($password, PASSWORD_DEFAULT);
 
     $db = new DbOperations;
-    $result = $db->createPremiumUser($name, $username, $email, $mobile, $hash_password, $reference, $agent_id, $district, $upazilla, $up);
+    $result = $db->createPremiumUser($name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up);
 
     if ($result == DATA_INSERTED) {
 
@@ -1324,6 +1416,47 @@ $app->post('/createagent', function(Request $request, Response $response){
 });
 
 
+$app->post('/agentlogin',function(Request $request,Response $response){
+    $request_data = $request->getParsedBody();
+    $email = $request_data['email'];
+    $password = $request_data['password'];
+
+    $db = new DbOperations;
+
+    $result = $db->agentLogin($email, $password);
+
+    if ($result == USER_AUTHENTICATED) {
+        $response_data = array();
+        $agent = $db->getAgentByEmail($email);
+        $response_data['error']=false; 
+        $response_data['message'] = 'Login Successful';
+        $response_data['agent'] = $agent;
+        $response->write(json_encode($response_data));
+        return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+    }elseif ($result == USER_UNAUTHENTICATED) {
+        $response_data = array();
+        $response_data['error']=true; 
+        $response_data['message'] = 'Email or Password does not match';
+        $response->write(json_encode($response_data));
+        return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+    }else{
+        $response_data = array();
+        $response_data['error']=true; 
+        $response_data['message'] = 'Email or Password does not match';
+        $response->write(json_encode($response_data));
+        return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+    }
+    return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);   
+});
+
 
 
 
@@ -1431,6 +1564,47 @@ $app->post('/createclub', function(Request $request, Response $response){
                 ->withHeader('Content-type', 'application/json')
                 ->withStatus(201);    
 
+});
+
+$app->post('/clublogin',function(Request $request,Response $response){
+    $request_data = $request->getParsedBody();
+    $email = $request_data['email'];
+    $password = $request_data['password'];
+
+    $db = new DbOperations;
+
+    $result = $db->clubLogin($email, $password);
+
+    if ($result == USER_AUTHENTICATED) {
+        $club = $db->getClubByEmail($email);
+        $response_data = array();
+        $response_data['error']=false; 
+        $response_data['message'] = 'Login Successful';
+        $response_data['club'] = $club;
+        $response->write(json_encode($response_data));
+        return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+    }elseif ($result == USER_UNAUTHENTICATED) {
+        $response_data = array();
+        $response_data['error']=true; 
+        $response_data['message'] = 'Email or Password does not match';
+        $response->write(json_encode($response_data));
+        return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+    }else{
+        $response_data = array();
+        $response_data['error']=true; 
+        $response_data['message'] = 'Email or Password does not match';
+        $response->write(json_encode($response_data));
+        return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);    
+    }
+    return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);   
 });
 
 
@@ -1617,6 +1791,32 @@ $app->post('/createsecuritypin', function(Request $request, Response $response){
 
 });
 
+
+$app->put('/setpinused', function(Request $request, Response $response){
+    $request_data = $request->getParsedBody();
+    $pin = $request_data['pin'];
+    $db = new DbOperations;
+    if ($db->setPinUsed($pin)) {
+        $response_data = array(); 
+        $response_data['error'] = false; 
+        $response_data['message'] = 'Pin set used successfully';
+        $response->write(json_encode($response_data));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }else{
+        $response_data = array(); 
+        $response_data['error'] = true; 
+        $response_data['message'] = 'No row affected';
+        $response->write(json_encode($response_data));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }
+    return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+});
 
 //Delete Security-Pin
 

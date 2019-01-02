@@ -22,6 +22,7 @@
     define('USER_AUTHENTICATED', 201);
     define('USER_NOT_FOUND', 202); 
     define('USER_PASSWORD_DO_NOT_MATCH', 203);
+    define('USER_UNAUTHENTICATED', 204);
     define('PASSWORD_CHANGED', 301);
     define('PASSWORD_DO_NOT_MATCH', 302);
     define('PASSWORD_NOT_CHANGED', 303);
