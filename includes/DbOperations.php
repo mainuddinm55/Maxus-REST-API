@@ -164,14 +164,14 @@
                 $rowCount = $stmt->affected_rows;
                 return $rowCount>0;
             }
-            public function addMatch($team1, $team2, $date_time, $match_type, $match_format){
+            public function addMatch($team1, $team2, $date_time,$tournament, $match_type, $match_format){
                 $stmt = $this->con->prepare("SELECT id FROM matches WHERE team1=? AND team2 = ? AND date_time = ?");
                 $stmt->bind_param("sss",$team1,$team2,$date_time);
                 $stmt->execute();
                 $stmt->store_result();
                 if (!$stmt->num_rows>0) {
-                    $stmt = $this->con->prepare("INSERT INTO `matches`(`team1`, `team2`, `date_time`, `match_type`, `match_format`) VALUES (?,?,?,?,?)");
-                    $stmt->bind_param("sssss",$team1, $team2,$date_time,  $match_type, $match_format);
+                    $stmt = $this->con->prepare("INSERT INTO `matches`(`team1`, `team2`, `date_time`,`tournament`, `match_type`, `match_format`) VALUES (?,?,?,?,?,?)");
+                    $stmt->bind_param("ssssss",$team1, $team2,$date_time,$tournament, $match_type, $match_format);
                     if ($stmt->execute()) {
                         return DATA_INSERTED;
                     }else{
@@ -200,10 +200,10 @@
             }
             public function getRunningMatch(){
 
-                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time, match_type, match_format, status FROM matches WHERE status = 1");
+                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time,tournament, match_type, match_format, status FROM matches WHERE DATE_FORMAT(date_time, '%Y-%m-%d') = CURDATE()");
                 //$stmt->bind_param("i",1);
                 $stmt->execute();
-                $stmt->bind_result($id, $team1, $team2, $date_time, $match_type, $match_format, $status);
+                $stmt->bind_result($id, $team1, $team2, $date_time,$tournament, $match_type, $match_format, $status);
                 $matches = array(); 
                 while($stmt->fetch()){ 
                     $match = array(); 
@@ -211,6 +211,7 @@
                     $match['team1']=$team1; 
                     $match['team2'] = $team2; 
                     $match['date_time'] = $date_time;
+                    $match['tournament'] = $tournament;
                     $match['match_type'] = $match_type;
                     $match['match_format'] = $match_format;
                     $match['status'] = $status;    
@@ -218,10 +219,12 @@
                 }             
                 return $matches; 
             }
-            public function getAllMatches(){
-                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time, match_type, match_format, status FROM matches");
+            public function getUpcomingMatch(){
+
+                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time,tournament, match_type, match_format, status FROM matches WHERE DATE_FORMAT(date_time, '%Y-%m-%d') > CURDATE()");
+                //$stmt->bind_param("i",1);
                 $stmt->execute();
-                $stmt->bind_result($id, $team1, $team2, $date_time, $match_type, $match_format, $status);
+                $stmt->bind_result($id, $team1, $team2, $date_time, $tournament, $match_type, $match_format, $status);
                 $matches = array(); 
                 while($stmt->fetch()){ 
                     $match = array(); 
@@ -229,6 +232,48 @@
                     $match['team1']=$team1; 
                     $match['team2'] = $team2; 
                     $match['date_time'] = $date_time;
+                    $match['tournament'] = $tournament;
+                    $match['match_type'] = $match_type;
+                    $match['match_format'] = $match_format;
+                    $match['status'] = $status;    
+                    array_push($matches, $match);
+                }             
+                return $matches; 
+            }
+            public function getFinishMatch(){
+
+                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time,tournament, match_type, match_format, status FROM matches WHERE DATE_FORMAT(date_time, '%Y-%m-%d') < CURDATE()");
+                //$stmt->bind_param("i",1);
+                $stmt->execute();
+                $stmt->bind_result($id, $team1, $team2, $date_time, $tournament, $match_type, $match_format, $status);
+                $matches = array(); 
+                while($stmt->fetch()){ 
+                    $match = array(); 
+                    $match['id'] = $id; 
+                    $match['team1']=$team1; 
+                    $match['team2'] = $team2; 
+                    $match['date_time'] = $date_time;
+                    $match['tournament'] = $tournament;
+                    $match['match_type'] = $match_type;
+                    $match['match_format'] = $match_format;
+                    $match['status'] = $status;    
+                    array_push($matches, $match);
+                }             
+                return $matches; 
+            }
+            
+            public function getAllMatches(){
+                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time,tournament, match_type, match_format, status FROM matches");
+                $stmt->execute();
+                $stmt->bind_result($id, $team1, $team2, $date_time,$tournament,$match_type, $match_format, $status);
+                $matches = array(); 
+                while($stmt->fetch()){ 
+                    $match = array(); 
+                    $match['id'] = $id; 
+                    $match['team1']=$team1; 
+                    $match['team2'] = $team2; 
+                    $match['date_time'] = $date_time;
+                    $match['tournament'] = $tournament;
                     $match['match_type'] = $match_type;
                     $match['match_format'] = $match_format;
                     $match['status'] = $status;    
@@ -237,16 +282,17 @@
                 return $matches; 
             }
             public function getMatchById($id){
-                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time, match_type, match_format, status FROM matches WHERE id = ?");
+                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time,tournament, match_type, match_format, status FROM matches WHERE id = ?");
                 $stmt->bind_param("i",$id);
                 $stmt->execute();
-                $stmt->bind_result($id, $team1, $team2, $date_time, $match_type, $match_format, $status);
+                $stmt->bind_result($id, $team1, $team2, $date_time, $tournament, $match_type, $match_format, $status);
                 $stmt->fetch();
                 $match = array(); 
                 $match['id'] = $id; 
                 $match['team1']=$team1; 
                 $match['team2'] = $team2; 
                 $match['date_time'] = $date_time;
+                $match['tournament'] = $tournament;
                 $match['match_type'] = $match_type;
                 $match['match_format'] = $match_format;
                 $match['status'] = $status;    

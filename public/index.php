@@ -277,11 +277,12 @@ $app->post('/addmatch',function(Request $request, Response $response){
     $team1 = $request_data['team1'];
     $team2 = $request_data['team2'];
     $date_time = $request_data['date_time'];
+    $tournament = $request_data['tournament'];
     $match_type = $request_data['match_type'];
     $match_format = $request_data['match_format'];
 
     $db = new DbOperations;
-    $result = $db->addMatch($team1, $team2, $date_time, $match_type, $match_format);
+    $result = $db->addMatch($team1, $team2, $date_time,$tournament, $match_type, $match_format);
     if ($result == DATA_INSERTED) {
         $message = array(); 
         $message['error'] = false; 
@@ -335,6 +336,27 @@ $app->get('/allrunningmatch', function(Request $request, Response $response){
                 ->withHeader('Content-type', 'application/json')
                 ->withStatus(200);  
 });
+$app->get('/allupcomingmatch', function(Request $request, Response $response){
+    $db = new DbOperations;
+    $matches = $db->getUpcomingMatch();
+    $response_data['error'] = false; 
+    $response_data['matches'] = $matches; 
+    $response->write(json_encode($response_data));
+    return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);  
+});
+$app->get('/allfinishmatch', function(Request $request, Response $response){
+    $db = new DbOperations;
+    $matches = $db->getFinishMatch();
+    $response_data['error'] = false; 
+    $response_data['matches'] = $matches; 
+    $response->write(json_encode($response_data));
+    return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);  
+});
+
 
 $app->put('/updatematch/{id}', function(Request $request, Response $response,array $args){
     $id = $args['id'];
@@ -662,14 +684,22 @@ $app->get('/allbetratesbygroupmatchandbet/{bet_mode}/{user_type_id}', function(R
             foreach ($bet_rates as $bet_rate ) {
                 array_push($bet_rate_array, $bet_rate);
             }
-            $bet_array['bet'] = $bet;
-            $bet_array['bet_rates'] = $bet_rate_array;
-            array_push($bet_match_array, $bet_array);
+            
+                $bet_array['bet'] = $bet;
+                $bet_array['bet_rates'] = $bet_rate_array;
+                array_push($bet_match_array, $bet_array);
+            
+            
+        }
+        if (!empty($bets)) {
+            if (!empty($bet_match_array)) {
+               $match_array['match'] = $match;
+                $match_array['bets'] = $bet_match_array;
+                array_push($array, $match_array);
+            }
+            
         }
         
-        $match_array['match'] = $match;
-        $match_array['bets'] = $bet_match_array;
-        array_push($array, $match_array);
     }
     $message = array();
     $message['error'] = true; 
