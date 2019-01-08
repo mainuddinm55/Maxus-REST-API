@@ -323,21 +323,13 @@ $app->put('/updatetransacationstatus/{id}', function(Request $request, Response 
     $status = $request_data['status'];
     $db = new DbOperations; 
     if($db->updateTransactionStatus($status, $id)){
-        $response_data = array(); 
-        $response_data['error'] = false; 
-        $response_data['message'] = 'Transaction Updated Successfully';
         $transaction = $db->getTransactionById($id);
-        $response_data['transaction'] = $transaction; 
-        $response->write(json_encode($response_data));
+        $response->write(json_encode($transaction));
         return $response
         ->withHeader('Content-type', 'application/json')
         ->withStatus(200);  
         
     }else{
-        $response_data = array(); 
-        $response_data['error'] = true; 
-        $response_data['message'] = 'Please try again later';
-        $response->write(json_encode($response_data));
         return $response
         ->withHeader('Content-type', 'application/json')
         ->withStatus(200);  
@@ -1601,6 +1593,15 @@ $app->get('/clubbyid/{id}', function(Request $request, Response $response, array
     }
 });
 
+//Get Admin
+$app->get('/getadmin', function(Request $request, Response $response){
+    $db = new DbOperations;
+    $admin = $db->getAdmin();
+    $response->write(json_encode($admin));
+    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+});
 
 
 

@@ -274,9 +274,12 @@
             public function updateTransactionStatus($status,$id){
                     $stmt = $this->con->prepare("UPDATE transaction SET status = ? WHERE id = ?");
                     $stmt->bind_param("si",$status, $id);
-                    $stmt->execute();
-                    $rowCount = $stmt->affected_rows;
-                    return $rowCount>0;
+                    if($stmt->execute()){
+                        return true;
+                    }else{
+                        return false;
+                    }
+                    
             }
             public function deleteTransaction($id){
                 $stmt = $this->con->prepare("DELETE FROM transaction WHERE id = ?");
@@ -1578,6 +1581,33 @@
 
         public function getClubById($id){
             $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE user_id=?;");
+            $stmt->bind_param("i",$id);
+            $stmt->execute(); 
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
+ 
+            $stmt->fetch();
+            $user = array(); 
+            $user['user_id'] = $user_id; 
+            $user['name']= $name;
+            $user['username'] = $username; 
+            $user['email'] = $email; 
+            $user['mobile'] = $mobile;
+            $user['club_id'] = $club_id;
+            $user['reference'] = $reference;
+            $user['agent_id'] = $agent_id;
+            $user['district'] = $district;
+            $user['upazilla'] = $upazilla;
+            $user['up'] = $up;
+            $user['total_balance'] = $total_balance;
+            $user['status'] = $status;
+            $user['rank_id'] = $rank_id;
+            $user['type_id'] = $type_id;
+            return $user; 
+        }
+
+            //Get Admin
+            public function getAdmin(){
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE type_id=1;");
             $stmt->bind_param("i",$id);
             $stmt->execute(); 
             $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
