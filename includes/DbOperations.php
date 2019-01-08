@@ -89,6 +89,28 @@
                     return DATA_INSERTED_FAILED;
                 }
             }
+
+            public function setFromUserSeen($transaction_id){
+                $stmt = $this->con->prepare("UPDATE transaction SET from_user_seen = 1 WHERE id = ?");
+                $stmt->bind_param("i",$transaction_id);
+                if($stmt->execute()){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            public function setToUserSeen($transaction_id){
+                $stmt = $this->con->prepare("UPDATE transaction SET to_user_seen = 1 WHERE id = ?");
+                $stmt->bind_param("i",$transaction_id);
+                if($stmt->execute()){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            
             public function getAllTransactions(){
                 $stmt = $this->con->prepare("SELECT id, from_username, to_username, trans_date, amount, trans_type, trans_charge, status FROM transaction");
                 $stmt->execute();
@@ -108,6 +130,80 @@
                 }             
                 return $transactions; 
             }
+
+            public function getAllUserDepositTransactions($username){
+                $stmt = $this->con->prepare("SELECT id, from_username, to_username, trans_date, amount,trans_type, trans_charge, status, from_user_seen, to_user_seen FROM transaction WHERE LOWER(trans_type) = 'deposit' AND from_username = ?");
+                $stmt->bind_param("s",$username);
+                $stmt->execute();
+                $stmt->bind_result($id, $from_username, $to_username, $trans_date, $amount, $trans_type, $trans_charge, $status, $from_user_seen, $to_user_seen);
+                $transactions = array(); 
+                while($stmt->fetch()){ 
+                    $transaction = array(); 
+                    $transaction['id'] = $id; 
+                    $transaction['from_username']=$from_username; 
+                    $transaction['to_username'] = $to_username; 
+                    $transaction['trans_date'] = $trans_date;
+                    $transaction['amount'] = $amount;
+                    $transaction['trans_type'] = $trans_type;
+                    $transaction['trans_charge'] = $trans_charge;
+                    $transaction['status'] = $status;    
+                    $transaction['from_user_seen'] = $from_user_seen;
+                    $transaction['to_user_seen'] = $to_user_seen;
+                    array_push($transactions, $transaction);
+                }             
+                return $transactions; 
+            }
+
+
+            public function getAllUserWithdrawTransactions($username){
+                $stmt = $this->con->prepare("SELECT id, from_username, to_username, trans_date, amount, trans_type, trans_charge, status, from_user_seen, to_user_seen FROM transaction WHERE LOWER(trans_type) = 'withdraw' AND from_username = ?");
+                $stmt->bind_param("s",$username);
+                $stmt->execute();
+                $stmt->bind_result($id, $from_username, $to_username, $trans_date, $amount, $trans_type, $trans_charge, $status, $from_user_seen, $to_user_seen);
+                $transactions = array(); 
+                while($stmt->fetch()){ 
+                    $transaction = array(); 
+                    $transaction['id'] = $id; 
+                    $transaction['from_username']=$from_username; 
+                    $transaction['to_username'] = $to_username; 
+                    $transaction['trans_date'] = $trans_date;
+                    $transaction['amount'] = $amount;
+                    $transaction['trans_type'] = $trans_type;
+                    $transaction['trans_charge'] = $trans_charge;
+                    $transaction['status'] = $status;    
+                    $transaction['from_user_seen'] = $from_user_seen;
+                    $transaction['to_user_seen'] = $to_user_seen;
+                    array_push($transactions, $transaction);
+                }             
+                return $transactions; 
+            }
+
+            public function getAllUserBalanceTransferTransactions($username){
+                $stmt = $this->con->prepare("SELECT id, from_username, to_username, trans_date, amount, trans_type, trans_charge, status, from_user_seen, to_user_seen FROM transaction WHERE LOWER(trans_type) = 'balance transfer' AND from_username = ?");
+                $stmt->bind_param("s",$username);
+                $stmt->execute();
+                $stmt->bind_result($id, $from_username, $to_username, $trans_date, $amount, $trans_type, $trans_charge, $status, $from_user_seen, $to_user_seen);
+                $transactions = array(); 
+                while($stmt->fetch()){ 
+                    $transaction = array(); 
+                    $transaction['id'] = $id; 
+                    $transaction['from_username']=$from_username; 
+                    $transaction['to_username'] = $to_username; 
+                    $transaction['trans_date'] = $trans_date;
+                    $transaction['amount'] = $amount;
+                    $transaction['trans_type'] = $trans_type;
+                    $transaction['trans_charge'] = $trans_charge;
+                    $transaction['status'] = $status;    
+                    $transaction['from_user_seen'] = $from_user_seen;
+                    $transaction['to_user_seen'] = $to_user_seen;
+                    array_push($transactions, $transaction);
+                }             
+                return $transactions; 
+            }
+
+
+
+            
             public function getTransactionByFromUser($username){
                 $stmt = $this->con->prepare("SELECT id, from_username, to_username, trans_date, amount, trans_type, trans_charge, status FROM transaction WHERE from_username = ?");
                 $stmt->bind_param("s",$username);
@@ -125,6 +221,31 @@
                 $transaction['status'] = $status;    
                 return $transaction;
             }
+            
+
+            public function getRequestedTransactions($username){
+                $stmt = $this->con->prepare("SELECT id, from_username, to_username, trans_date, amount,trans_type, trans_charge, status, from_user_seen, to_user_seen FROM transaction WHERE  to_username = ? ORDER BY trans_date DESC");
+                $stmt->bind_param("s",$username);
+                $stmt->execute();
+                $stmt->bind_result($id, $from_username, $to_username, $trans_date, $amount, $trans_type, $trans_charge, $status, $from_user_seen, $to_user_seen);
+                $transactions = array(); 
+                while($stmt->fetch()){ 
+                    $transaction = array(); 
+                    $transaction['id'] = $id; 
+                    $transaction['from_username']=$from_username; 
+                    $transaction['to_username'] = $to_username; 
+                    $transaction['trans_date'] = $trans_date;
+                    $transaction['amount'] = $amount;
+                    $transaction['trans_type'] = $trans_type;
+                    $transaction['trans_charge'] = $trans_charge;
+                    $transaction['status'] = $status;    
+                    $transaction['from_user_seen'] = $from_user_seen;
+                    $transaction['to_user_seen'] = $to_user_seen;
+                    array_push($transactions, $transaction);
+                }             
+                return $transactions; 
+            }
+
             public function getTransactionById($id){
                 $stmt = $this->con->prepare("SELECT id, from_username, to_username, trans_date, amount, trans_type, trans_charge, status FROM transaction WHERE id = ?");
                 $stmt->bind_param("s",$id);
@@ -697,25 +818,57 @@
                 }  
                 return $user_bets;
             }
+
+            //Get All Users Bets by Club Id
             public function getUserBetByAgentId($agent_id){
-                $stmt = $this->con->prepare("SELECT user_id,bet_id,bet_option_id,bet_rate,bet_amount, bet_return_amount,bet_mode_id,bet_date,result FROM user_bet WHERE user_id = (SELECT user_id FROM user WHERE agent_id = ?)");
+                $stmt = $this->con->prepare("SELECT ub.user_id, ub.bet_id, ub.bet_option_id, ub.bet_rate, ub.bet_amount, ub.bet_return_amount, ub.bet_mode_id, ub.bet_date, ub.result, u.username, u.mobile, b.question FROM user_bet ub, users u, bet b WHERE ub.user_id = u.user_id AND ub.bet_id = b.bet_id AND u.user_id IN (SELECT users.user_id FROM users WHERE users.agent_id = ? AND users.type_id IN(4,5,6) ORDER BY ub.bet_date DESC)");
                 $stmt->bind_param("i",$agent_id);
                 $stmt->execute();
-                $stmt->bind_result($user_id, $bet_id, $bet_option_id, $bet_rate, $bet_amount, $bet_return_amount,$bet_mode_id, $bet_date,$result);
+                $stmt->bind_result($user_id, $bet_id, $bet_option_id, $bet_rate, $bet_amount, $bet_return_amount, $bet_mode_id, $bet_date, $result, $username, $mobile, $question);
                 $user_bets = array();
-                while($stmt->fetch()){ 
-                    $user_bet = array(); 
-                    $user_bet['user_id'] = $user_id; 
-                    $user_bet['bet_id']=$bet_id; 
-                    $user_bet['bet_option_id'] = $bet_option_id; 
+                while ($stmt->fetch()) {
+                    $user_bet = array();
+                    $user_bet['user_id'] = $user_id;
+                    $user_bet['bet_id'] = $bet_id;
+                    $user_bet['bet_option_id'] = $bet_option_id;
                     $user_bet['bet_rate'] = $bet_rate;
                     $user_bet['bet_amount'] = $bet_amount;
                     $user_bet['bet_return_amount'] = $bet_return_amount;
                     $user_bet['bet_mode_id'] = $bet_mode_id;
                     $user_bet['bet_date'] = $bet_date;
                     $user_bet['result'] = $result;
+                    $user_bet['username'] = $username;
+                    $user_bet['mobile'] = $mobile;
+                    $user_bet['question'] = $question;
                     array_push($user_bets, $user_bet);
-                }  
+                }
+                return $user_bets;
+            }
+
+            //Get All Users Bets by Club Id
+
+            public function getUsersBetByClubId($club_id){
+                $stmt = $this->con->prepare("SELECT ub.user_id, ub.bet_id, ub.bet_option_id, ub.bet_rate, ub.bet_amount, ub.bet_return_amount, ub.bet_mode_id, ub.bet_date, ub.result, u.username, u.mobile, b.question FROM user_bet ub, users u, bet b WHERE ub.user_id = u.user_id AND ub.bet_id = b.bet_id AND u.agent_id IN (SELECT users.user_id FROM users WHERE users.club_id = ? AND users.type_id = 3)");
+                $stmt->bind_param("i",$club_id);
+                $stmt->execute();
+                $stmt->bind_result($user_id, $bet_id, $bet_option_id, $bet_rate, $bet_amount, $bet_return_amount, $bet_mode_id, $bet_date, $result, $username, $mobile, $question);
+                $user_bets = array();
+                while ($stmt->fetch()) {
+                    $user_bet = array();
+                    $user_bet['user_id'] = $user_id;
+                    $user_bet['bet_id'] = $bet_id;
+                    $user_bet['bet_option_id'] = $bet_option_id;
+                    $user_bet['bet_rate'] = $bet_rate;
+                    $user_bet['bet_amount'] = $bet_amount;
+                    $user_bet['bet_return_amount'] = $bet_return_amount;
+                    $user_bet['bet_mode_id'] = $bet_mode_id;
+                    $user_bet['bet_date'] = $bet_date;
+                    $user_bet['result'] = $result;
+                    $user_bet['username'] = $username;
+                    $user_bet['mobile'] = $mobile;
+                    $user_bet['question'] = $question;
+                    array_push($user_bets, $user_bet);
+                }
                 return $user_bets;
             }
 
@@ -749,148 +902,142 @@
                 return PASSWORD_DO_NOT_MATCH; 
             }
             }
-            public function getUserById($user_id){
-                $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, reference, agent_id, district, upazilla, up, type_id, advanced_balance, trade_balance,rank_id FROM user WHERE user_id = ?");
-                $stmt->bind_param("i",$user_id);
-                $stmt->execute();
-                $stmt->bind_result($user_id, $name, $username, $email, $mobile, $reference, $agent_id, $district, $upazilla, $up, $type_id, $advanced_balance, $trade_balance, $rank_id);
-                $users =  array();
-                while ($stmt->fetch()) {
-                    $user = array();
-                    $user['user_id'] = $user_id;
-                    $user['name'] = $name;
-                    $user['username'] = $username;
-                    $user['email'] = $email;
-                    $user['mobile'] = $mobile;
-                    $user['reference'] = $reference;
-                    $user['agent_id'] = $agent_id;
-                    $user['district'] = $district;
-                    $user['upazilla'] = $upazilla;
-                    $user['up'] = $up;
-                    $user['type_id'] = $type_id;
-                    $user['advanced_balance'] = $advanced_balance;
-                    $user['trade_balance'] = $trade_balance;
-                    $user['rank_id'] = $rank_id;
-                    array_push($users, $user);
-                }
-                return $users;
-            }
-            public function getUserByEmail($email){
-                $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, reference, agent_id, district, upazilla, up, type_id, advanced_balance, trade_balance,rank_id FROM user WHERE email = ?");
-                $stmt->bind_param("s",$email);
-                $stmt->execute();
-                $stmt->bind_result($user_id, $name, $username, $email, $mobile, $reference, $agent_id, $district, $upazilla, $up, $type_id, $advanced_balance, $trade_balance, $rank_id);
             
-                $user = array();
-                $stmt->fetch();
-                $user['user_id'] = $user_id;
-                $user['name'] = $name;
-                $user['username'] = $username;
-                $user['email'] = $email;
+            public function getUserByEmail($email){
+
+                $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile,  district, upazilla, up,   total_balance, status ,type_id FROM users WHERE type_id  = 2 ;");
+            $stmt->execute(); 
+            $stmt->bind_result( $club_id, $name, $username, $email, $mobile,  $district, $upazilla, $up, 
+                 $total_balance, $status,$type_id);
+
+            $users = array(); 
+            while($stmt->fetch()){ 
+                $user = array(); 
+                $user['user_id'] = $club_id; 
+                $user['name']= $name;
+                $user['username'] = $username; 
+                $user['email'] = $email; 
                 $user['mobile'] = $mobile;
-                $user['reference'] = $reference;
-                $user['agent_id'] = $agent_id;
                 $user['district'] = $district;
                 $user['upazilla'] = $upazilla;
                 $user['up'] = $up;
+                $user['total_balance'] = $total_balance;
+                $user['status'] = $status;
                 $user['type_id'] = $type_id;
-                $user['advanced_balance'] = $advanced_balance;
-                $user['trade_balance'] = $trade_balance;
-                $user['rank_id'] = $rank_id;
-                return $user;
-               
+                array_push($users, $user);
+            }    
+            return $users;               
             }
+
+
+            public function getUserByUsername($username){
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE username=?;");
+            $stmt->bind_param("s",$username);
+            $stmt->execute(); 
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
+ 
+            $stmt->fetch();
+            $user = array(); 
+            $user['user_id'] = $user_id; 
+            $user['name']= $name;
+            $user['username'] = $username; 
+            $user['email'] = $email; 
+            $user['mobile'] = $mobile;
+            $user['club_id'] = $club_id;
+            $user['reference'] = $reference;
+            $user['agent_id'] = $agent_id;
+            $user['district'] = $district;
+            $user['upazilla'] = $upazilla;
+            $user['up'] = $up;
+            $user['total_balance'] = $total_balance;
+            $user['status'] = $status;
+            $user['rank_id'] = $rank_id;
+            $user['type_id'] = $type_id;
+            return $user; 
+        }
+
             public function createPremiumUser($name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up){
-
-                $stmt = $this->con->prepare("SELECT user_id FROM user WHERE email = ?");
+                $stmt = $this->con->prepare("SELECT user_id FROM users WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute(); 
                 $stmt->store_result(); 
                 if (!$stmt->num_rows>0) {
-                    $stmt = $this->con->prepare("SELECT user_id FROM user WHERE username = ?");
+                    $stmt = $this->con->prepare("SELECT user_id FROM users WHERE username = ?");
                     $stmt->bind_param("s", $username);
                     $stmt->execute(); 
                     $stmt->store_result(); 
+                    
                     if (!$stmt->num_rows>0) {
-                        $stmt = $this->con->prepare("SELECT club_id FROM club WHERE username = ?");
-                        $stmt->bind_param("s",$username);
-                        $stmt->execute();
-                        $stmt->store_result();
+                        $stmt = $this->con->prepare("SELECT user_id FROM users WHERE mobile = ?");
+                        $stmt->bind_param("s", $mobile);
+                        $stmt->execute(); 
+                        $stmt->store_result(); 
                         if (!$stmt->num_rows>0) {
-                            $stmt = $this->con->prepare("SELECT agent_id FROM agent WHERE username = ?");
-                            $stmt->bind_param("s",$username);
-                            $stmt->execute();
-                            $stmt->store_result();
-                            if (!$stmt->num_rows>0) {
-                                $stmt = $this->con->prepare("SELECT user_id FROM user WHERE mobile = ?");
-                                $stmt->bind_param("s", $mobile);
-                                $stmt->execute(); 
-                                $stmt->store_result(); 
-                                if (!$stmt->num_rows>0) {
-                                    $stmt = $this->con->prepare("INSERT INTO user(name, username, email, mobile, password, reference, agent_id, district, upazilla, up, type_id ) VALUES (?,?,?,?,?,?,?,?,?,?,3)");
+                            $stmt = $this->con->prepare("INSERT INTO users(name, username, email, mobile, password, reference, agent_id, district, upazilla, up, type_id,rank_id ) VALUES (?,?,?,?,?,?,?,?,?,?,6,1)");
                                     $stmt->bind_param("ssssssisss", $name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up);
-                                    if ($stmt->execute()){
-                                        return DATA_INSERTED;
-                                    }
-                                    else{
-                                        return DATA_INSERTED_FAILED;
-                                    }
-                                }
-                                return MOBILE_DUPLICATE;
+                            if ($stmt->execute()){
+                                return DATA_INSERTED;
                             }
-                            return USERNAME_DUPLICATE;
+                            else{
+                                return DATA_INSERTED_FAILED;
+                            }
                         }
-                        return USERNAME_DUPLICATE;
+                        return MOBILE_DUPLICATE;
+                    }
+                    return USERNAME_DUPLICATE;
+                }
+                return EMAIL_DUPLICATE;
+                
+            }
+            public function createUser($name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin){
+
+                $stmt = $this->con->prepare("SELECT user_id FROM users WHERE email = ?");
+                $stmt->bind_param("s", $email);
+                $stmt->execute(); 
+                $stmt->store_result(); 
+                if (!$stmt->num_rows>0) {
+                    $stmt = $this->con->prepare("SELECT user_id FROM users WHERE username = ?");
+                    $stmt->bind_param("s", $username);
+                    $stmt->execute(); 
+                    $stmt->store_result(); 
+                    
+                    if (!$stmt->num_rows>0) {
+                        $stmt = $this->con->prepare("SELECT user_id FROM users WHERE mobile = ?");
+                        $stmt->bind_param("s", $mobile);
+                        $stmt->execute(); 
+                        $stmt->store_result(); 
+                        if (!$stmt->num_rows>0) {
+                            $stmt = $this->con->prepare("INSERT INTO users(name, username, email, mobile, password, reference, agent_id, district, upazilla, up, type_id, pin, rank_id ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1)");
+                            $stmt->bind_param("ssssssisssii", $name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin);
+                            if ($stmt->execute()){
+                                return DATA_INSERTED;
+                            }
+                            else{
+                                return DATA_INSERTED_FAILED;
+                            }
+                        }
+                        return MOBILE_DUPLICATE;
                     }
                     return USERNAME_DUPLICATE;
                 }
                 return EMAIL_DUPLICATE;
             }
-            public function createUser($name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin_id, $trade_balance){
 
-                $stmt = $this->con->prepare("SELECT user_id FROM user WHERE email = ?");
-                $stmt->bind_param("s", $email);
-                $stmt->execute(); 
-                $stmt->store_result(); 
-                if (!$stmt->num_rows>0) {
-                    $stmt = $this->con->prepare("SELECT user_id FROM user WHERE username = ?");
-                    $stmt->bind_param("s", $username);
-                    $stmt->execute(); 
-                    $stmt->store_result(); 
-                    if (!$stmt->num_rows>0) {
-                        $stmt = $this->con->prepare("SELECT club_id FROM club WHERE username = ?");
-                        $stmt->bind_param("s",$username);
-                        $stmt->execute();
-                        $stmt->store_result();
-                        if (!$stmt->num_rows>0) {
-                            $stmt = $this->con->prepare("SELECT agent_id FROM agent WHERE username = ?");
-                            $stmt->bind_param("s",$username);
-                            $stmt->execute();
-                            $stmt->store_result();
-                            if (!$stmt->num_rows>0) {
-                                $stmt = $this->con->prepare("SELECT user_id FROM user WHERE mobile = ?");
-                                $stmt->bind_param("s", $mobile);
-                                $stmt->execute(); 
-                                $stmt->store_result(); 
-                                if (!$stmt->num_rows>0) {
-                                    $stmt = $this->con->prepare("INSERT INTO user(name, username, email, mobile, password, reference, agent_id, district, upazilla, up, type_id, pin_id, trade_balance ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
-                                    $stmt->bind_param("ssssssisssiid", $name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin_id, $trade_balance);
-                                    if ($stmt->execute()){
-                                        return DATA_INSERTED;
-                                    }
-                                    else{
-                                        return DATA_INSERTED_FAILED;
-                                    }
-                                }
-                                return MOBILE_DUPLICATE;
-                            }
-                            return USERNAME_DUPLICATE;
-                        }
-                        return USERNAME_DUPLICATE;
-                    }
-                    return USERNAME_DUPLICATE;
-                }
-                return EMAIL_DUPLICATE;
+            public function getUserBalanceById($id){
+                $stmt = $this->con->prepare("SELECT total_balance FROM users WHERE user_id = ?");
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $stmt->bind_result($total_balance);
+                $stmt->fetch();
+                return $total_balance;
+            }
+
+            public function isUserExist($username){
+                $stmt = $this->con->prepare("SELECT username FROM users WHERE username = ? AND type_id IN(4,5,6)");
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $stmt->store_result();
+                return $stmt->num_rows>0;
             }
             public function userLogin($email, $password){
                 $stmt = $this->con->prepare("SELECT email FROM user WHERE email = ? AND password = ?");
@@ -902,24 +1049,19 @@
                 }else{
                     return USER_UNAUTHENTICATED;
                 }
-/*
-                $stmt = $this->con->prepare("SELECT email FROM user WHERE email = ?");
-                $stmt->bind_param("s", $email);
-                $stmt->execute(); 
-                $stmt->store_result(); 
-                if ($stmt->num_rows > 0) {
-                     $hashed_password = $this->getUsersPasswordByEmail($email); 
-                    if(password_verify($password, $hashed_password)){
-                        return USER_AUTHENTICATED;
-                    }else{
-                        return USER_PASSWORD_DO_NOT_MATCH; 
-                    }
-                 } else{
-                    return USER_NOT_FOUND; 
-                }
-        */
             }
 
+            public function login($email, $password){
+                $stmt = $this->con->prepare("SELECT email FROM users WHERE email = ? AND password = ?");
+                $stmt->bind_param("ss",$email,$password);
+                $stmt->execute();
+                $stmt->store_result();
+                if ($stmt->num_rows>0) {
+                    return USER_AUTHENTICATED;
+                }else{
+                    return USER_UNAUTHENTICATED;
+                }
+            }
             public function adminLogin($email, $password){
                 $stmt = $this->con->prepare("SELECT email FROM admin WHERE email = ? AND password = ?");
                 $stmt->bind_param("ss",$email,$password);
@@ -959,7 +1101,15 @@
                 return $password; 
             }
             public function getAgentIdByUsername($username){
-                $stmt = $this->con->prepare("SELECT agent_id FROM user WHERE username = ?");
+
+                    $stmt = $this->con->prepare("SELECT user_id FROM users WHERE username = ? AND type_id IN (3,4,5,6)");
+                    $stmt->bind_param("s",$username);
+                    $stmt->execute();
+                    $stmt->bind_result($user_id);
+                    $stmt->fetch();
+                    return $user_id;
+                
+                /*$stmt = $this->con->prepare("SELECT user_id FROM users WHERE username = ?");
                 $stmt->bind_param("s",$username);
                 $stmt->execute();
                 //$stmt->bind_result($agent_id);
@@ -989,7 +1139,7 @@
                     $stmt->bind_result($agent_id);
                     $stmt->fetch();
                     return $agent_id;
-                }
+                }*/
                 
             }
             public function deleteUser($id){
@@ -1002,10 +1152,39 @@
 
             public function getAllUser(){
 
-            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, password, reference, agent_id, district, upazilla, up, type_id, pin_id, create_date, validity_date, trade_balance, advanced_balance, status, rank_id  FROM user ;");
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile,  reference, agent_id, district, upazilla, up, type_id, total_balance, status, rank_id  FROM users WHERE type_id IN (4,5,6) ORDER BY type_id;");
 
             $stmt->execute(); 
-            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $password, $reference, $agent_id, $district,   $upazilla, $up, $type_id, $pin_id, $create_date, $validity_date, $trade_balance, $advanced_balance, $status, $rank_id );
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile,  $reference, $agent_id, $district,   $upazilla, $up, $type_id, $total_balance, $status, $rank_id );
+
+            $users = array(); 
+            while($stmt->fetch()){ 
+                $user = array(); 
+                $user['user_id'] = $user_id; 
+                $user['name']= $name;
+                $user['username'] = $username; 
+                $user['email'] = $email; 
+                $user['mobile'] = $mobile;
+                $user['reference'] = $reference; 
+                $user['agent_id'] = $agent_id;
+                $user['district'] = $district;
+                $user['upazilla'] = $upazilla;
+                $user['up'] = $up;
+                $user['type_id'] = $type_id;
+                $user['advanced_balance'] = $total_balance;
+                $user['status'] = $status;
+                $user['rank_id'] = $rank_id;
+                array_push($users, $user);
+            }    
+            return $users; 
+        }
+
+        public function getAllUsers(){
+
+            $stmt = $this->con->prepare("SELECT * FROM user_view");
+
+            $stmt->execute(); 
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_name, $assert_need, $bonus, $user_type);
 
             $users = array(); 
             while($stmt->fetch()){ 
@@ -1017,32 +1196,86 @@
                 $user['username'] = $username; 
                 $user['email'] = $email; 
                 $user['mobile'] = $mobile;
-                $user['password'] = $password;
                 $user['reference'] = $reference; 
                 $user['agent_id'] = $agent_id;
                 $user['district'] = $district;
                 $user['upazilla'] = $upazilla;
                 $user['up'] = $up;
                 $user['type_id'] = $type_id;
-                $user['pin_id'] = $pin_id;
-                $user['create_date'] = $create_date;
-                $user['validity_date'] = $validity_date;
-                $user['trade_balance'] = $trade_balance;
-                $user['advanced_balance'] = $advanced_balance;
+                $user['advanced_balance'] = $total_balance;
                 $user['status'] = $status;
-                $user['rank_id'] = $rank_id;
-
+                $user['rank_name'] = $rank_name;
+                $user['assert_need'] = $assert_need;
+                $user['bonus'] = $bonus;
+                $user['user_type'] = $user_type;
                 array_push($users, $user);
             }    
 
             return $users; 
         }
         
+        public function getUsersByEmail($email){
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE email = ? ;");
+            $stmt->bind_param("s",$email);
+            $stmt->execute(); 
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
+ 
+            $stmt->fetch();
+                $user = array(); 
+                $user['user_id'] = $user_id; 
+                $user['name']= $name;
+                $user['username'] = $username; 
+                $user['email'] = $email; 
+                $user['mobile'] = $mobile;
+                $user['club_id'] = $club_id;
+                $user['reference'] = $reference;
+                $user['agent_id'] = $agent_id;
+                $user['district'] = $district;
+                $user['upazilla'] = $upazilla;
+                $user['up'] = $up;
+                $user['total_balance'] = $total_balance;
+                $user['status'] = $status;
+                $user['rank_id'] = $rank_id;
+                $user['type_id'] = $type_id;
+                
+             
+            return $user; 
+        }
+        
 //Create Club
 
            public function createClub($name, $username, $email, $mobile,  $password,$district, $upazilla, $up){
                 
-                $stmt = $this->con->prepare("SELECT club_id FROM club WHERE email = ?");
+                $stmt = $this->con->prepare("SELECT user_id FROM users WHERE email = ?");
+                $stmt->bind_param("s", $email);
+                $stmt->execute(); 
+                $stmt->store_result(); 
+                if (!$stmt->num_rows>0) {
+                    $stmt = $this->con->prepare("SELECT user_id FROM users WHERE username = ?");
+                    $stmt->bind_param("s", $username);
+                    $stmt->execute(); 
+                    $stmt->store_result(); 
+                    if (!$stmt->num_rows>0) {
+                        $stmt = $this->con->prepare("SELECT user_id FROM users WHERE mobile = ?");
+                        $stmt->bind_param("s", $mobile);
+                        $stmt->execute(); 
+                        $stmt->store_result(); 
+                        if (!$stmt->num_rows>0) {
+                            $stmt = $this->con->prepare("INSERT INTO users(name, username, email,mobile, password, district, upazilla, up, type_id) VALUES (?,?,?,?,?,?,?,?,2)");
+                            $stmt->bind_param("ssssssss",$name,$username, $email, $mobile, $password, $district, $upazilla, $up);
+                            if ($stmt->execute()) {
+                                return DATA_INSERTED;
+                            }else{
+                                return DATA_INSERTED_FAILED;
+                            }
+                        }
+                        return MOBILE_DUPLICATE;
+                    }
+                    return USERNAME_DUPLICATE;
+                }
+                return EMAIL_DUPLICATE;
+
+                /*$stmt = $this->con->prepare("SELECT club_id FROM club WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute(); 
                 $stmt->store_result(); 
@@ -1083,7 +1316,7 @@
                     }
                     return USERNAME_DUPLICATE;
                 }
-                return EMAIL_DUPLICATE;
+                return EMAIL_DUPLICATE;*/
                 
            }
 
@@ -1104,25 +1337,7 @@
 //Update Club
 
 
-               public function getClubById($id){
-
-                    $stmt = $this->con->prepare("SELECT name, mobile, district, upazilla, up FROM club WHERE club_id = ?");
-
-                    $stmt->bind_param("i", $id);
-                    $stmt->execute();
-                    $stmt->bind_result($name, $mobile, $district, $upazilla, $up);
-                    $clubs = array();
-                    while($stmt->fetch()){ 
-                        $club = array(); 
-                        $club['name'] = $name; 
-                        $club['mobile']=$mobile; 
-                        $club['district'] = $district; 
-                        $club['upazilla'] = $upazilla;
-                        $club['up'] = $up;
-                        array_push($clubs, $club);
-                    }  
-                    return $clubs; 
-                }
+        
 
                 public function getClubByEmail($email){
 
@@ -1193,92 +1408,70 @@
 //Select Club
 
 
-                 public function getAllClub(){
-
-            $stmt = $this->con->prepare("SELECT club_id, name, username, email, mobile, password, district, upazilla, up,  create_date, total_balance, status  FROM club ;");
-
+            public function getAllClub(){
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile,  district, upazilla, up,   total_balance, status ,type_id FROM users WHERE type_id  = 2 ;");
             $stmt->execute(); 
-            $stmt->bind_result( $club_id, $name, $username, $email, $mobile, $password, $district, $upazilla, $up, 
-                $create_date, $total_balance, $status);
+            $stmt->bind_result( $club_id, $name, $username, $email, $mobile,  $district, $upazilla, $up, 
+                 $total_balance, $status,$type_id);
 
             $users = array(); 
             while($stmt->fetch()){ 
-
                 $user = array(); 
-
-                $user['club_id'] = $club_id; 
+                $user['user_id'] = $club_id; 
                 $user['name']= $name;
                 $user['username'] = $username; 
                 $user['email'] = $email; 
                 $user['mobile'] = $mobile;
-                $user['password'] = $password;
                 $user['district'] = $district;
                 $user['upazilla'] = $upazilla;
                 $user['up'] = $up;
-                $user['create_date'] = $create_date;
                 $user['total_balance'] = $total_balance;
                 $user['status'] = $status;
-
-
+                $user['type_id'] = $type_id;
                 array_push($users, $user);
             }    
-
             return $users; 
         }
 
 
                 public function getClubIdByUsername( $username){
-                    $stmt = $this->con->prepare("SELECT club_id FROM club WHERE username = ?");
+                    $stmt = $this->con->prepare("SELECT user_id FROM users WHERE username = ?");
                     $stmt->bind_param("s",$username);
                     $stmt->execute();
-                    $stmt->bind_result($club_id);
+                    $stmt->bind_result($user_id);
                     $stmt->fetch();
-                    return $club_id;
+                    return $user_id;
                 }
 //Create Agent
                public function createAgent($name, $username, $email, $mobile,  $password, $club_id,$district, $upazilla, $up){
 
-                $stmt = $this->con->prepare("SELECT agent_id FROM agent WHERE email = ?");
+                $stmt = $this->con->prepare("SELECT user_id FROM users WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute(); 
                 $stmt->store_result(); 
 
                 if (!$stmt->num_rows>0) {
-                    $stmt = $this->con->prepare("SELECT agent_id FROM agent WHERE username = ?");
+                    $stmt = $this->con->prepare("SELECT user_id FROM users WHERE username = ?");
                     $stmt->bind_param("s", $username);
                     $stmt->execute(); 
                     $stmt->store_result(); 
+                    
                     if (!$stmt->num_rows>0) {
-                        $stmt = $this->con->prepare("SELECT club_id FROM club WHERE username = ?");
-                        $stmt->bind_param("s",$username);
-                        $stmt->execute();
-                        $stmt->store_result();
+                        $stmt = $this->con->prepare("SELECT user_id FROM users WHERE mobile = ?");
+                        $stmt->bind_param("s", $mobile);
+                        $stmt->execute(); 
+                        $stmt->store_result(); 
                         if (!$stmt->num_rows>0) {
-                            $stmt = $this->con->prepare("SELECT user_id FROM user WHERE username = ?");
-                            $stmt->bind_param("s",$username);
-                            $stmt->execute();
-                            $stmt->store_result();
-                            if (!$stmt->num_rows>0) {
-                                $stmt = $this->con->prepare("SELECT agent_id FROM agent WHERE mobile = ?");
-                                $stmt->bind_param("s", $mobile);
-                                $stmt->execute(); 
-                                $stmt->store_result(); 
-                                if (!$stmt->num_rows>0) {
-                                    $stmt = $this->con->prepare("INSERT INTO agent (name, username, email, mobile, password, club_id, district, upazilla, up) VALUES (?,?,?,?,?,?,?,?,?)");
+                            $stmt = $this->con->prepare("INSERT INTO users (name, username, email, mobile, password, club_id, district, upazilla, up,type_id) VALUES (?,?,?,?,?,?,?,?,?,3)");
                             
-                                    $stmt->bind_param("sssssisss",$name, $username, $email, $mobile, $password, $club_id, $district, $upazilla, $up );
-
-                                    if ($stmt->execute()) {
-                                        return DATA_INSERTED;
-                                    }else{
-                                        return DATA_INSERTED_FAILED;
-                                    }
-                                }
-                                return MOBILE_DUPLICATE;
+                            $stmt->bind_param("sssssisss",$name, $username, $email, $mobile, $password, $club_id, $district, $upazilla, $up );
+                            if ($stmt->execute()) {
+                                return DATA_INSERTED;
+                            }else{
+                                return DATA_INSERTED_FAILED;
                             }
-                            return USERNAME_DUPLICATE;
                         }
-                        return USERNAME_DUPLICATE;
+                        return MOBILE_DUPLICATE;
                     }
                     return USERNAME_DUPLICATE;
                 }
@@ -1332,31 +1525,87 @@
 
         public function getAllAgent(){
 
-            $stmt = $this->con->prepare("SELECT agent_id, name, username, email, mobile, password, club_id, district, upazilla, up, create_date, total_balance, status FROM agent ;");
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile,  club_id, district, upazilla, up,  total_balance, status,type_id FROM users WHERE type_id = 3 ;");
 
             $stmt->execute(); 
-            $stmt->bind_result( $agent_id, $name, $username, $email, $mobile, $password, $club_id, $district, $upazilla, $up, $create_date, $total_balance, $status );
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile,  $club_id, $district, $upazilla, $up, $total_balance, $status,$type_id );
 
             $users = array(); 
             while($stmt->fetch()){ 
                 $user = array(); 
-                $user['agent_id'] = $agent_id; 
+                $user['agent_id'] = $user_id; 
                 $user['name']= $name;
                 $user['username'] = $username; 
                 $user['email'] = $email; 
                 $user['mobile'] = $mobile;
-                $user['password'] = $password; 
                 $user['club_id'] = $club_id;
                 $user['district'] = $district;
                 $user['upazilla'] = $upazilla;
                 $user['up'] = $up;
-                $user['create_date'] = $create_date;
                 $user['total_balance'] = $total_balance;
                 $user['status'] = $status;
+                $user['type_id'] = $type_id;
                 array_push($users, $user);
             }
             return $users; 
         }
+
+        public function getAgentById($id){
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE user_id=?;");
+            $stmt->bind_param("i",$id);
+            $stmt->execute(); 
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
+ 
+            $stmt->fetch();
+            $user = array(); 
+            $user['user_id'] = $user_id; 
+            $user['name']= $name;
+            $user['username'] = $username; 
+            $user['email'] = $email; 
+            $user['mobile'] = $mobile;
+            $user['club_id'] = $club_id;
+            $user['reference'] = $reference;
+            $user['agent_id'] = $agent_id;
+            $user['district'] = $district;
+            $user['upazilla'] = $upazilla;
+            $user['up'] = $up;
+            $user['total_balance'] = $total_balance;
+            $user['status'] = $status;
+            $user['rank_id'] = $rank_id;
+            $user['type_id'] = $type_id;
+            return $user; 
+        }
+
+        public function getClubById($id){
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE user_id=?;");
+            $stmt->bind_param("i",$id);
+            $stmt->execute(); 
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
+ 
+            $stmt->fetch();
+            $user = array(); 
+            $user['user_id'] = $user_id; 
+            $user['name']= $name;
+            $user['username'] = $username; 
+            $user['email'] = $email; 
+            $user['mobile'] = $mobile;
+            $user['club_id'] = $club_id;
+            $user['reference'] = $reference;
+            $user['agent_id'] = $agent_id;
+            $user['district'] = $district;
+            $user['upazilla'] = $upazilla;
+            $user['up'] = $up;
+            $user['total_balance'] = $total_balance;
+            $user['status'] = $status;
+            $user['rank_id'] = $rank_id;
+            $user['type_id'] = $type_id;
+            return $user; 
+        }
+
+
+
+
+
         public function getAgentByEmail($email){
             $stmt = $this->con->prepare("SELECT agent_id, name, username, email, mobile, club_id, district, upazilla, up, total_balance FROM agent WHERE email = ?");
 

@@ -159,6 +159,50 @@ $app->post('/addtransaction', function(Request $request, Response $response){
     ->withStatus(422); 
 });
 
+$app->put('/setfromuserseen/{id}', function(Request $request, Response $response, array $args){
+    $id = $args['id'];
+    $db = new DbOperations;
+    if ($db->setFromUserSeen($id)) {
+        $response_data = array(); 
+        $response_data['error'] = false; 
+        $response_data['message'] = 'From user set seen';
+        $response->write(json_encode($response_data));
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(200); 
+    }else{
+        $response_data = array(); 
+        $response_data['error'] = true; 
+        $response_data['message'] = 'From user already seen';
+        $response->write(json_encode($response_data));
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(200); 
+    }
+});
+
+$app->put('/settouserseen/{id}', function(Request $request, Response $response, array $args){
+    $id = $args['id'];
+    $db = new DbOperations;
+    if ($db->setToUserSeen($id)) {
+        $response_data = array(); 
+        $response_data['error'] = false; 
+        $response_data['message'] = 'To user set seen';
+        $response->write(json_encode($response_data));
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(200); 
+    }else{
+        $response_data = array(); 
+        $response_data['error'] = true; 
+        $response_data['message'] = 'To user already seen';
+        $response->write(json_encode($response_data));
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(200); 
+    }
+});
+
 $app->get('/alltransactions', function(Request $request, Response $response){
     $db = new DbOperations; 
     $transactions = $db->getAllTransactions();
@@ -170,6 +214,56 @@ $app->get('/alltransactions', function(Request $request, Response $response){
     ->withHeader('Content-type', 'application/json')
     ->withStatus(200);  
 });
+
+$app->get('/alldeposittransactions/{username}', function(Request $request, Response $response, array $args){
+    $username = $args['username'];
+    $db = new DbOperations; 
+    $transactions = $db->getAllUserDepositTransactions($username);
+    $response_data = array();
+    //$response_data['error'] = false; 
+    //$response_data['transactions'] = $transactions; 
+    $response->write(json_encode($transactions));
+    return $response
+    ->withHeader('Content-type', 'application/json')
+    ->withStatus(200);  
+});
+
+$app->get('/allwithdrawtransactions/{username}', function(Request $request, Response $response, array $args){
+    $username = $args['username'];
+    $db = new DbOperations; 
+    $transactions = $db->getAllUserWithdrawTransactions($username);
+    $response_data = array();
+    //$response_data['error'] = false; 
+    //$response_data['transactions'] = $transactions; 
+    $response->write(json_encode($transactions));
+    return $response
+    ->withHeader('Content-type', 'application/json')
+    ->withStatus(200);  
+});
+
+$app->get('/allbalancetransfertransactions/{username}', function(Request $request, Response $response, array $args){
+    $username = $args['username'];
+    $db = new DbOperations; 
+    $transactions = $db->getAllUserBalanceTransferTransactions($username);
+    $response_data = array();
+    //$response_data['error'] = false; 
+    //$response_data['transactions'] = $transactions; 
+    $response->write(json_encode($transactions));
+    return $response
+    ->withHeader('Content-type', 'application/json')
+    ->withStatus(200);  
+});
+
+$app->get('/allrequestedtransactions/{username}', function(Request $request, Response $response, array $args){
+    $username = $args['username'];
+    $db = new DbOperations;
+    $transactions = $db->getRequestedTransactions($username);
+    $response->write(json_encode($transactions));
+    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+});
+
 
 $app->get('/transactions/{username}', function(Request $request, Response $response,array $args){
     $username = $args['username'];
@@ -1030,19 +1124,27 @@ $app->get('/alluserbetsbyuserid/{id}',function(Request $request, Response $respo
                 ->withStatus(200); 
 });
 
+
+
 $app->get('/alluserbetsbyagentid/{id}',function(Request $request, Response $response, array $args){
     $id = $args['id'];
     $db = new DbOperations;
     $userbets = $db->getUserBetByAgentId($id);
-    $response_data = array();
-    $response_data['error'] = false; 
-    $response_data['userbets'] = $userbets; 
-    $response->write(json_encode($response_data));
+    $response->write(json_encode($userbets));
     return $response
                 ->withHeader('Content-type', 'application/json')
                 ->withStatus(200); 
 });
 
+$app->get('/allusersbetsbyclub/{id}', function(Request $request, Response $response, array $args){
+    $id = $args['id'];
+    $db = new DbOperations;
+    $userbets = $db->getUsersBetByClubId($id);
+    $response->write(json_encode($userbets));
+    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+});
 $app->put('/updateuser/{id}', function(Request $request, Response $response, array $args){
     $id = $args['id'];
 
@@ -1113,7 +1215,27 @@ $app->get('/alluser', function(Request $request, Response $response){
     ->withHeader('Content-type', 'application/json')
     ->withStatus(200);  
 });
+$app->get('/allusers', function(Request $request, Response $response){
+    $db = new DbOperations; 
+    $users = $db->getAllUsers();
+    $response_data = array();
+    $response_data['error'] = false; 
+    $response_data['users'] = $users; 
+    $response->write(json_encode($response_data));
+    return $response
+    ->withHeader('Content-type', 'application/json')
+    ->withStatus(200);  
+});
 
+$app->get('/userbyid/{username}', function(Request $request, Response $response, array $args){
+    $username = $args['username'];
+    $db = new DbOperations;
+    $user = $db->getUserByUsername($username);
+    $response->write(json_encode($user));
+    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+});
 
 $app->put('/updatepassword/{id}', function(Request $request, Response $response,array $args){
         $id = $args['id'];
@@ -1167,12 +1289,11 @@ $app->post('/createuser', function(Request $request, Response $response){
     $up = $request_data['up'];
     $type_id = $request_data['type_id'];
     $pin_id = $request_data['pin_id'];
-    $trade_balance = $request_data['trade_balance'];
 
     //$hash_password = password_hash($password, PASSWORD_DEFAULT);
 
     $db = new DbOperations;
-    $result = $db->createUser($name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin_id, $trade_balance);
+    $result = $db->createUser($name, $username, $email, $mobile, $password, $reference, $agent_id, $district, $upazilla, $up, $type_id, $pin_id);
 
     if ($result == DATA_INSERTED) {
 
@@ -1220,7 +1341,40 @@ $app->post('/createuser', function(Request $request, Response $response){
     return $response
         ->withHeader('Content-type', 'application/json')
         ->withStatus(201);
+});
 
+$app->get('/getuserbalance/{id}', function(Request $request, Response $response, array $args){
+    $id = $args['id'];
+    $db = new DbOperations;
+    $total_balance = $db->getUserBalanceById($id);
+    $response->write(json_encode($total_balance));
+    
+    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+});
+
+$app->get('/isuserexists/{username}', function(Request $request, Response $response, array $args){
+    $username = $args['username'];
+    $db = new DbOperations;
+    $result = $db->isUserExist($username);
+    if ($result) {
+        $message = array(); 
+        $message['error'] = false; 
+        $message['message'] = 'User exists';
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }else{
+        $message = array(); 
+        $message['error'] = true; 
+        $message['message'] = 'User does not exists';
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }
 });
 
 $app->post('/userlogin', function(Request $request, Response $response){
@@ -1253,6 +1407,49 @@ $app->post('/userlogin', function(Request $request, Response $response){
             ->withHeader('Content-type', 'application/json')
             ->withStatus(422);    
 });
+$app->get('/getuserbyemail/{email}',function(Request $request, Response $response, array $args ){
+        $db = new DbOperations;
+        $email = $args['email'];
+        $message = array();
+        $user = $db->getUsersByEmail($email);
+        $message['user'] = $user;
+        $response->write(json_encode($message));
+        return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+});
+$app->post('/login',function (Request $request, Response $response){
+        $request_data = $request->getParsedBody();
+        $email = $request_data['email'];
+        $password = $request_data['password'];
+
+        $db = new DbOperations;
+        $result = $db->login($email, $password);
+
+        if ($result == USER_AUTHENTICATED) {
+            $user = $db->getUsersByEmail($email);
+            $response_data = array();
+            $response_data['error'] = false;
+            $response_data['message'] = 'Login Successful';
+            $response_data['user'] = $user;
+            $response->write(json_encode($response_data));
+            return $response
+                        ->withHeader('Content-type','application/json')
+                        ->withStatus(200);
+        }elseif ($result == USER_UNAUTHENTICATED) {
+           $response_data = array();
+            $response_data['error'] = true;
+            $response_data['message'] = 'Email or password is invalid';
+            $response->write(json_encode($response_data));
+            return $response
+                        ->withHeader('Content-type','application/json')
+                        ->withStatus(200);
+        }
+        return $response
+                    ->withHeader('Content-type','application/json')
+                    ->withStatus(200);
+});
+
 
 $app->post('/adminlogin', function(Request $request, Response $response){
         $request_data = $request->getParsedBody(); 
@@ -1353,6 +1550,59 @@ $app->post('/createpremiumuser', function(Request $request, Response $response){
         ->withStatus(201);
 
 });
+
+$app->get('/agentbyid/{id}', function(Request $request, Response $response, array $args){
+    $id = $args['id'];
+    $db = new DbOperations;
+    $user = $db->getAgentById($id);
+    if (!empty($user)) {
+        $message = array(); 
+        $message['error'] = false; 
+        $message['message'] = 'Agent has exists';
+        $message['user'] = $user;
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }else{
+        $message = array(); 
+        $message['error'] = true; 
+        $message['message'] = 'Agent does not exists.';
+        $message['user'] = $user;
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }
+});
+
+$app->get('/clubbyid/{id}', function(Request $request, Response $response, array $args){
+    $id = $args['id'];
+    $db = new DbOperations;
+    $user = $db->getClubById($id);
+    if (!empty($user)) {
+        $message = array(); 
+        $message['error'] = false; 
+        $message['message'] = 'Club has exists';
+        $message['user'] = $user;
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }else{
+        $message = array(); 
+        $message['error'] = true; 
+        $message['message'] = 'Club does not exists.';
+        $message['user'] = $user;
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+    }
+});
+
+
+
 
 $app->get('/getagentidbyreference/{reference}', function(Request $request, Response $response, array $args){
     $reference = $args['reference'];
