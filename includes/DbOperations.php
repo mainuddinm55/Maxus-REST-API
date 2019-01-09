@@ -251,16 +251,17 @@
                 $stmt->bind_param("s",$id);
                 $stmt->execute();
                 $stmt->bind_result($id, $from_username, $to_username, $trans_date, $amount, $trans_type, $trans_charge, $status);
-                $stmt->fetch();
                 $transaction = array(); 
-                $transaction['id'] = $id; 
+                while($stmt->fetch()){
+                 $transaction['id'] = $id; 
                 $transaction['from_username']=$from_username; 
                 $transaction['to_username'] = $to_username; 
                 $transaction['trans_date'] = $trans_date;
                 $transaction['amount'] = $amount;
                 $transaction['trans_type'] = $trans_type;
                 $transaction['trans_charge'] = $trans_charge;   
-                $transaction['status'] = $status;        
+                $transaction['status'] = $status;      
+                }    
                 return $transaction;
             }
         

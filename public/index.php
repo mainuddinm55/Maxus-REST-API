@@ -324,7 +324,7 @@ $app->get('/allrequestedtransactions/{username}', function(Request $request, Res
 });
 
 
-$app->get('/transactions/{username}', function(Request $request, Response $response,array $args){
+$app->get('/transaction/{username}', function(Request $request, Response $response,array $args){
     $username = $args['username'];
     $db = new DbOperations; 
     $transactions = $db->getTransactionByFromUser($username);
@@ -336,6 +336,18 @@ $app->get('/transactions/{username}', function(Request $request, Response $respo
     ->withHeader('Content-type', 'application/json')
     ->withStatus(200);  
 });
+
+//Get Transaction By id
+$app->get('/transactionbyid/{id}', function(Request $request, Response $response,array $args){
+    $id = $args['id'];
+    $db = new DbOperations; 
+    $transaction = $db->getTransactionById($id);
+    $response->write(json_encode($transaction));
+    return $response
+    ->withHeader('Content-type', 'application/json')
+    ->withStatus(200);  
+});
+
 
 $app->put('/updatetransacation/{id}', function(Request $request, Response $response, array $args){
     $id = $args['id'];
