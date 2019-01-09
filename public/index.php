@@ -215,6 +215,65 @@ $app->get('/alltransactions', function(Request $request, Response $response){
     ->withStatus(200);  
 });
 
+//Get User notifications
+$app->get('/usernotification/{username}', function(Request $request, Response $response, array $args){
+    $username = $args['username'];
+
+    $db = new DbOperations;
+    $notifications = $db->getUserNotification($username);
+    $response->write(json_encode($notifications));
+    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+});
+//Approved  Transaction
+$app->put('/appreovedtransaction', function(Request $request, Response $response){
+    $request_data = $request->getParsedBody();
+    $amount = $request_data['amount'];
+    $to_username = $request_data['to_username'];
+    $from_username = $request_data['from_username'];
+
+    $db = new DbOperations;
+    $to_username_existing_balance = $db->getUserBalanceByUsername($to_username);
+    $to_username_update_balance = $to_username_existing_balance - $amount;
+    $updateToUserBalance = $db->updateUserBalance($to_username_update_balance, $to_username);
+    if($updateToUserBalance){
+        $from_username_existing_balance = $db->getUserBalanceByUsername($from_username);
+        $from_username_update_balance = $from_username_existing_balance + $amount;
+        $updateFromUserBalance = $db->updateUserBalance($from_username_update_balance, $from_username);
+        if ($updateFromUserBalance) {
+            $message = array();
+           $message['error'] = false;
+           $message['message'] = "Transaction successful";
+           $response->write(json_encode($message));
+           return $response
+                        ->withHeader('Content-type','application/json')
+                        ->withStatus(200);
+        }else{
+           $message = array();
+           $message['error'] = true;
+           $message['message'] = "Transaction failed";
+           $response->write(json_encode($message));
+           return $response
+                        ->withHeader('Content-type','application/json')
+                        ->withStatus(200);
+       }
+    } else{
+        $message = array();
+           $message['error'] = true;
+           $message['message'] = "Transaction failed";
+           $response->write(json_encode($message));
+           return $response
+                        ->withHeader('Content-type','application/json')
+                        ->withStatus(200);
+    }
+    
+    $response->write(json_encode($withdraw_result));
+    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+});
+
 $app->get('/alldeposittransactions/{username}', function(Request $request, Response $response, array $args){
     $username = $args['username'];
     $db = new DbOperations; 
@@ -1219,7 +1278,7 @@ $app->get('/allusers', function(Request $request, Response $response){
     ->withStatus(200);  
 });
 
-$app->get('/userbyid/{username}', function(Request $request, Response $response, array $args){
+$app->get('/userbyusername/{username}', function(Request $request, Response $response, array $args){
     $username = $args['username'];
     $db = new DbOperations;
     $user = $db->getUserByUsername($username);

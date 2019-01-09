@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 08, 2019 at 04:21 PM
+-- Generation Time: Jan 09, 2019 at 03:46 PM
 -- Server version: 10.1.33-MariaDB
 -- PHP Version: 7.2.6
 
@@ -94,6 +94,7 @@ CREATE TABLE `bet` (
   `bet_mode` int(6) DEFAULT NULL,
   `status` int(1) DEFAULT '1',
   `result` varchar(30) NOT NULL DEFAULT 'In play',
+  `status_update_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `right_answer` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -101,14 +102,14 @@ CREATE TABLE `bet` (
 -- Dumping data for table `bet`
 --
 
-INSERT INTO `bet` (`bet_id`, `question`, `started_date`, `match_id`, `bet_mode`, `status`, `result`, `right_answer`) VALUES
-(36, 'Who won the toss?', '0000-00-00 00:00:00', 23, 3, 1, 'Finish', 14),
-(37, 'Who won the match?', '2018-07-24 00:07:23', 23, 3, 1, 'Finish', 16),
-(38, 'Who won toss?', '0000-00-00 00:00:00', 24, 3, 1, 'In play', 0),
-(40, 'Who won the match?', '2019-08-01 20:08:29', 24, 1, 1, 'In play', 0),
-(41, 'Who won the match?', '2019-08-01 20:08:29', 24, 2, 1, 'In play', 0),
-(42, 'Who won the match?', '0000-00-00 00:00:00', 23, 1, 1, 'In play', 0),
-(43, 'Who won the match?', '0000-00-00 00:00:00', 23, 2, 1, 'In play', 0);
+INSERT INTO `bet` (`bet_id`, `question`, `started_date`, `match_id`, `bet_mode`, `status`, `result`, `status_update_date`, `right_answer`) VALUES
+(36, 'Who won the toss?', '0000-00-00 00:00:00', 23, 3, 1, 'Finish', '0000-00-00 00:00:00', 14),
+(37, 'Who won the match?', '2018-07-24 00:07:23', 23, 3, 1, 'Finish', '0000-00-00 00:00:00', 16),
+(38, 'Who won toss?', '0000-00-00 00:00:00', 24, 3, 1, 'In play', '0000-00-00 00:00:00', 0),
+(40, 'Who won the match?', '2019-08-01 20:08:29', 24, 1, 1, 'In play', '0000-00-00 00:00:00', 0),
+(41, 'Who won the match?', '2019-08-01 20:08:29', 24, 2, 1, 'In play', '0000-00-00 00:00:00', 0),
+(42, 'Who won the match?', '0000-00-00 00:00:00', 23, 1, 1, 'In play', '0000-00-00 00:00:00', 0),
+(43, 'Who won the match?', '0000-00-00 00:00:00', 23, 2, 1, 'In play', '0000-00-00 00:00:00', 0);
 
 -- --------------------------------------------------------
 
@@ -365,7 +366,8 @@ CREATE TABLE `transaction` (
   `to_username` varchar(100) NOT NULL,
   `amount` double NOT NULL,
   `trans_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `status` varchar(20) DEFAULT 'Request send',
+  `status` varchar(20) DEFAULT 'Request Send',
+  `status_update_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `trans_type` varchar(50) NOT NULL,
   `trans_charge` varchar(50) DEFAULT NULL,
   `from_user_seen` int(1) DEFAULT '0',
@@ -376,11 +378,14 @@ CREATE TABLE `transaction` (
 -- Dumping data for table `transaction`
 --
 
-INSERT INTO `transaction` (`id`, `from_username`, `to_username`, `amount`, `trans_date`, `status`, `trans_type`, `trans_charge`, `from_user_seen`, `to_user_seen`) VALUES
-(2, 'mainuddin', 'kamal', 500, '2018-12-18 09:42:04', 'Success', 'Withdraw', '1', 0, 1),
-(3, 'robi', 'kamal', 500, '2019-01-07 08:44:05', 'Request send', 'Deposit', '0.0', 0, 1),
-(4, 'robi', 'kamal', 200, '2019-01-07 11:48:51', 'Request send', 'Withdraw', '0.0', 0, 1),
-(5, 'robi', 'hanif', 20, '2019-01-07 13:09:22', 'Request send', 'Balance Transfer', '0.1', 0, 0);
+INSERT INTO `transaction` (`id`, `from_username`, `to_username`, `amount`, `trans_date`, `status`, `status_update_date`, `trans_type`, `trans_charge`, `from_user_seen`, `to_user_seen`) VALUES
+(2, 'mainuddin', 'kamal', 500, '2018-12-18 09:42:04', 'Success', '2018-12-31 18:00:00', 'Withdraw', '1', 0, 1),
+(3, 'robi', 'kamal', 500, '2019-01-07 08:44:05', 'Request send', '0000-00-00 00:00:00', 'Deposit', '0.0', 0, 1),
+(4, 'robi', 'kamal', 200, '2019-01-07 11:48:51', 'Request send', '0000-00-00 00:00:00', 'Withdraw', '0.0', 0, 1),
+(5, 'robi', 'hanif', 20, '2019-01-07 13:09:22', 'Request send', '0000-00-00 00:00:00', 'Balance Transfer', '0.1', 0, 0),
+(6, 'kamal', 'mainuddin', 5000, '2019-01-09 06:56:23', 'Request send', '0000-00-00 00:00:00', 'Deposit', '0.0', 0, 0),
+(7, 'mainuddin', 'maxusint', 10000, '2019-01-09 07:40:57', 'Success', '2019-01-09 13:22:07', 'Deposit', '0.0', 0, 1),
+(8, 'mainuddin', 'maxusint', 10000, '2019-01-09 07:41:01', 'Success', '2019-01-08 00:00:00', 'Deposit', '0.0', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -438,7 +443,7 @@ CREATE TABLE `users` (
   `upazilla` varchar(50) DEFAULT NULL,
   `up` varchar(50) DEFAULT NULL,
   `pin` int(6) DEFAULT NULL,
-  `total_balance` double DEFAULT '0',
+  `total_balance` float DEFAULT '0',
   `status` varchar(20) DEFAULT 'Active',
   `rank_id` int(6) DEFAULT NULL,
   `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -450,8 +455,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `name`, `username`, `email`, `mobile`, `password`, `club_id`, `reference`, `agent_id`, `district`, `upazilla`, `up`, `pin`, `total_balance`, `status`, `rank_id`, `create_date`, `type_id`) VALUES
-(1, 'Shahriar', 'maxusint', 'maxusint@gmail.com', '01723307372', '123', NULL, NULL, NULL, 'Dhaka', 'Uttara', 'Uttara', NULL, 0, 'Active', NULL, '2019-01-05 07:11:03', 1),
-(2, 'Md Mainuddin', 'mainuddin', 'mainuddin@gmail.com', '01759108032', '123', NULL, NULL, NULL, 'Dhaka', '', '', NULL, 0, 'Active', NULL, '2019-01-05 07:15:42', 2),
+(1, 'Shahriar', 'maxusint', 'maxusint@gmail.com', '01723307372', '123', NULL, NULL, NULL, 'Dhaka', 'Uttara', 'Uttara', NULL, 29500, 'Active', NULL, '2019-01-05 07:11:03', 1),
+(2, 'Md Mainuddin', 'mainuddin', 'mainuddin@gmail.com', '01759108032', '123', NULL, NULL, NULL, 'Dhaka', '', '', NULL, 21000, 'Active', NULL, '2019-01-05 07:15:42', 2),
 (3, 'Kamal', 'kamal', 'kamal@gmail.com', '01833513131', '123', 2, NULL, NULL, 'Dhaka', '', '', NULL, 0, 'Active', NULL, '2019-01-05 07:20:13', 3),
 (6, 'Robi', 'robi', 'robi@gmail.com', '01856556699', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', 1, 0, 'Active', 1, '2019-01-05 07:46:49', 4),
 (7, 'Hanif', 'hanif', 'hanif@gmail.com', '0185635321', '123', NULL, 'mainuddin', 3, 'Dhaka', '', '', 3, 0, 'Active', 1, '2019-01-05 08:32:53', 4),
@@ -474,6 +479,7 @@ CREATE TABLE `user_bet` (
   `bet_mode_id` int(6) DEFAULT NULL,
   `bet_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `result` varchar(30) DEFAULT 'Pending',
+  `result_update_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `is_seen` int(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -481,12 +487,12 @@ CREATE TABLE `user_bet` (
 -- Dumping data for table `user_bet`
 --
 
-INSERT INTO `user_bet` (`user_id`, `bet_id`, `bet_option_id`, `bet_rate`, `bet_amount`, `bet_return_amount`, `bet_mode_id`, `bet_date`, `result`, `is_seen`) VALUES
-(1, 1, 1, 1.8, 500, 900, 1, '2018-12-13 12:20:02', 'Pending', 1),
-(2, 2, 6, 1.5, 200, 300, 1, '2018-12-19 11:13:24', 'Pending', 1),
-(2, 3, 6, 1.5, 200, 300, 1, '2018-12-19 11:55:58', 'Pending', 1),
-(6, 42, 29, 1.5, 20, 30, 1, '2019-01-07 18:00:00', 'Pending', 1),
-(13, 36, 14, 1.6, 10, 16, 3, '2019-01-02 07:55:30', 'Pending', 1);
+INSERT INTO `user_bet` (`user_id`, `bet_id`, `bet_option_id`, `bet_rate`, `bet_amount`, `bet_return_amount`, `bet_mode_id`, `bet_date`, `result`, `result_update_date`, `is_seen`) VALUES
+(1, 1, 1, 1.8, 500, 900, 1, '2018-12-13 12:20:02', 'Pending', '0000-00-00 00:00:00', 1),
+(2, 2, 6, 1.5, 200, 300, 1, '2018-12-19 11:13:24', 'Pending', '0000-00-00 00:00:00', 1),
+(2, 3, 6, 1.5, 200, 300, 1, '2018-12-19 11:55:58', 'Pending', '0000-00-00 00:00:00', 1),
+(6, 42, 29, 1.5, 20, 30, 1, '2019-01-07 18:00:00', 'Pending', '0000-00-00 00:00:00', 1),
+(13, 36, 14, 1.6, 10, 16, 3, '2019-01-02 07:55:30', 'Pending', '0000-00-00 00:00:00', 1);
 
 -- --------------------------------------------------------
 
@@ -727,7 +733,7 @@ ALTER TABLE `security_pin`
 -- AUTO_INCREMENT for table `transaction`
 --
 ALTER TABLE `transaction`
-  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `user`

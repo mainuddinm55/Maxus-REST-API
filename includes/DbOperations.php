@@ -272,7 +272,7 @@
                     return $rowCount>0;
                 } 
             public function updateTransactionStatus($status,$id){
-                    $stmt = $this->con->prepare("UPDATE transaction SET status = ? WHERE id = ?");
+                    $stmt = $this->con->prepare("UPDATE transaction SET status = ?, status_update_date = CURRENT_TIMESTAMP WHERE id = ?");
                     $stmt->bind_param("si",$status, $id);
                     if($stmt->execute()){
                         return true;
@@ -281,6 +281,45 @@
                     }
                     
             }
+
+            public function updateUserBalance($amount , $username){
+                $stmt = $this->con->prepare("UPDATE users SET total_balance = ? WHERE username = ?");
+                $stmt->bind_param("ds",$amount, $username);
+                if($stmt->execute()){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            public function getUserBalanceByUsername($username){
+                $stmt = $this->con->prepare("SELECT total_balance FROM users WHERE username = ?");
+                $stmt->bind_param("s",$username);
+                $stmt->execute();
+                $stmt->bind_result($total_balance);
+                $stmt->fetch();
+                return $total_balance;
+            }
+
+        
+            public function getUserNotification($username){
+                $stmt = $this->con->prepare("SELECT id, status, trans_type, amount, from_username, status_update_date, from_user_seen FROM transaction WHERE from_username = ? AND status = 'Success' ");
+                $stmt->bind_param("s",$username);
+                $stmt->execute();
+                $stmt->bind_result($id, $status, $trans_type, $amount, $from_username, $status_update_date, $from_user_seen);
+                $notifications = array();
+                while ($stmt->fetch()) {
+                    $notification = array();
+                    $notification['type_id'] = $id;
+                    $notification['body'] = $trans_type." ".$amount."$ from ".$from_username." ".strtolower($status);
+                    $notification['type'] = "Transaction";
+                    $notification['date'] = $status_update_date;
+                    $notification['isseen'] = $from_user_seen;
+                    array_push($notifications, $notification);
+                }
+                return $notifications;
+            }
+
             public function deleteTransaction($id){
                 $stmt = $this->con->prepare("DELETE FROM transaction WHERE id = ?");
                 $stmt->bind_param("i", $id);
@@ -936,6 +975,33 @@
             public function getUserByUsername($username){
             $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE username=?;");
             $stmt->bind_param("s",$username);
+            $stmt->execute(); 
+            $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
+ 
+            $stmt->fetch();
+            $user = array(); 
+            $user['user_id'] = $user_id; 
+            $user['name']= $name;
+            $user['username'] = $username; 
+            $user['email'] = $email; 
+            $user['mobile'] = $mobile;
+            $user['club_id'] = $club_id;
+            $user['reference'] = $reference;
+            $user['agent_id'] = $agent_id;
+            $user['district'] = $district;
+            $user['upazilla'] = $upazilla;
+            $user['up'] = $up;
+            $user['total_balance'] = $total_balance;
+            $user['status'] = $status;
+            $user['rank_id'] = $rank_id;
+            $user['type_id'] = $type_id;
+            return $user; 
+        }
+
+        //Get user by id
+        public function getUserById($id){
+            $stmt = $this->con->prepare("SELECT user_id, name, username, email, mobile, club_id, reference, agent_id, district,upazilla,up,total_balance, status,rank_id,type_id FROM users WHERE user_id=?;");
+            $stmt->bind_param("i",$id);
             $stmt->execute(); 
             $stmt->bind_result( $user_id, $name, $username, $email, $mobile, $club_id, $reference, $agent_id, $district, $upazilla, $up, $total_balance, $status, $rank_id,$type_id);
  
