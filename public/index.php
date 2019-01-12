@@ -1162,6 +1162,27 @@ $app->post('/userbet', function(Request $request , Response $response){
                 ->withStatus(422); 
 });
 
+$app->get('/isuseralreayplacebettoday/{user_id}', function(Request $request , Response $response, array $args){
+    $user_id = $args['user_id'];
+    $db = new DbOperations;
+    $result = $db->isAlreadyPlaceBet($user_id);
+    if ($result) {
+        $message['error'] = true; 
+        $message['message'] = 'Today user already bet in trade mode';
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200); 
+    }else{
+        $message['error'] = false; 
+        $message['message'] = 'Today no bet in trade mode';
+        $response->write(json_encode($message));
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200); 
+    }
+});
+
 $app->get('/alluserbets',function(Request $request, Response $response){
     $db = new DbOperations;
     $userbets = $db->getAllUserBets();

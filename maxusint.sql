@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 09, 2019 at 03:46 PM
+-- Generation Time: Jan 12, 2019 at 06:41 AM
 -- Server version: 10.1.33-MariaDB
 -- PHP Version: 7.2.6
 
@@ -94,7 +94,7 @@ CREATE TABLE `bet` (
   `bet_mode` int(6) DEFAULT NULL,
   `status` int(1) DEFAULT '1',
   `result` varchar(30) NOT NULL DEFAULT 'In play',
-  `status_update_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `status_update_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
   `right_answer` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -103,13 +103,20 @@ CREATE TABLE `bet` (
 --
 
 INSERT INTO `bet` (`bet_id`, `question`, `started_date`, `match_id`, `bet_mode`, `status`, `result`, `status_update_date`, `right_answer`) VALUES
-(36, 'Who won the toss?', '0000-00-00 00:00:00', 23, 3, 1, 'Finish', '0000-00-00 00:00:00', 14),
-(37, 'Who won the match?', '2018-07-24 00:07:23', 23, 3, 1, 'Finish', '0000-00-00 00:00:00', 16),
-(38, 'Who won toss?', '0000-00-00 00:00:00', 24, 3, 1, 'In play', '0000-00-00 00:00:00', 0),
-(40, 'Who won the match?', '2019-08-01 20:08:29', 24, 1, 1, 'In play', '0000-00-00 00:00:00', 0),
-(41, 'Who won the match?', '2019-08-01 20:08:29', 24, 2, 1, 'In play', '0000-00-00 00:00:00', 0),
-(42, 'Who won the match?', '0000-00-00 00:00:00', 23, 1, 1, 'In play', '0000-00-00 00:00:00', 0),
-(43, 'Who won the match?', '0000-00-00 00:00:00', 23, 2, 1, 'In play', '0000-00-00 00:00:00', 0);
+(44, 'Who won the match?', '0000-00-00 00:00:00', 1, 1, 1, 'Finish', '2019-01-10 12:37:31', 2);
+
+--
+-- Triggers `bet`
+--
+DELIMITER $$
+CREATE TRIGGER `update_user_bet_status` AFTER UPDATE ON `bet` FOR EACH ROW BEGIN
+IF NEW.result = 'Finish' THEN
+UPDATE user_bet SET result = 'Won', is_seen =0 WHERE bet_option_id = NEW.right_answer AND bet_id = OLD.bet_id;
+UPDATE user_bet SET result = 'Loss' , is_seen =0 WHERE bet_option_id != NEW.right_answer AND bet_id = OLD.bet_id;
+END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -166,24 +173,10 @@ CREATE TABLE `bet_rate` (
 --
 
 INSERT INTO `bet_rate` (`id`, `bet_id`, `options`, `rate`, `user_type_id`, `bet_mode_id`) VALUES
-(14, 36, 'Bangladesh', 1.6, 4, 3),
-(15, 36, 'Windies', 1.6, 4, 3),
-(16, 37, 'Bangladesh', 1.8, 4, 3),
-(17, 37, 'Windies', 2, 4, 3),
-(18, 38, 'India', 1.5, 4, 3),
-(19, 38, 'Australia', 1.6, 4, 3),
-(20, 40, 'India', 1.6, 2, 1),
-(21, 40, 'Australia', 1.2, 2, 1),
-(22, 40, 'India', 1.3, 1, 1),
-(23, 41, 'India', 1.3, 2, 2),
-(25, 41, 'Australia', 1.6, 2, 2),
-(26, 40, 'Australia', 1.6, 1, 1),
-(27, 41, 'Australia', 1.6, 3, 2),
-(28, 41, 'India', 1.7, 3, 2),
-(29, 42, 'Bangladesh', 1.5, 2, 1),
-(30, 42, 'Windies', 1.6, 2, 1),
-(31, 43, 'Bangladesh', 1.3, 3, 2),
-(32, 43, 'Windies', 1.2, 3, 2);
+(1, 44, 'Dhaka', 1.6, 5, 1),
+(2, 44, 'Dhaka', 1.6, 4, 1),
+(3, 44, 'Chittagong', 1.5, 4, 1),
+(4, 44, 'Chittagong', 1.5, 5, 1);
 
 -- --------------------------------------------------------
 
@@ -270,10 +263,7 @@ CREATE TABLE `matches` (
 --
 
 INSERT INTO `matches` (`id`, `team1`, `team2`, `date_time`, `tournament`, `match_type`, `match_format`, `status`) VALUES
-(23, 'Bangladesh', 'Windies', '2018-12-25 12:00:00', 'West Indies tour of Bangladesh', 'Cricket', 'T20', 1),
-(24, 'India', 'Australia', '2018-12-25 12:00:00', 'India tour of Australia', 'Cricket', 'ODI', 1),
-(25, 'India', 'Australia', '2019-01-03 04:00:00', '', 'Cricket', 'Test', 1),
-(26, 'Pakistan', 'South Africa', '2019-01-04 04:00:00', 'Pakistan tour of south africa', 'Cricket', 'Test', 1);
+(1, 'Dhaka', 'Chittagong', '2019-01-11 06:00:00', 'Bangladesh Premier League (BPL)', 'Cricket', 'T20', 1);
 
 -- --------------------------------------------------------
 
@@ -380,10 +370,10 @@ CREATE TABLE `transaction` (
 
 INSERT INTO `transaction` (`id`, `from_username`, `to_username`, `amount`, `trans_date`, `status`, `status_update_date`, `trans_type`, `trans_charge`, `from_user_seen`, `to_user_seen`) VALUES
 (2, 'mainuddin', 'kamal', 500, '2018-12-18 09:42:04', 'Success', '2018-12-31 18:00:00', 'Withdraw', '1', 0, 1),
-(3, 'robi', 'kamal', 500, '2019-01-07 08:44:05', 'Request send', '0000-00-00 00:00:00', 'Deposit', '0.0', 0, 1),
-(4, 'robi', 'kamal', 200, '2019-01-07 11:48:51', 'Request send', '0000-00-00 00:00:00', 'Withdraw', '0.0', 0, 1),
+(3, 'robi', 'kamal', 500, '2019-01-07 08:44:05', 'Success', '2019-01-10 09:49:34', 'Deposit', '0.0', 0, 1),
+(4, 'robi', 'kamal', 200, '2019-01-07 11:48:51', 'Success', '2019-01-10 09:49:48', 'Withdraw', '0.0', 0, 1),
 (5, 'robi', 'hanif', 20, '2019-01-07 13:09:22', 'Request send', '0000-00-00 00:00:00', 'Balance Transfer', '0.1', 0, 0),
-(6, 'kamal', 'mainuddin', 5000, '2019-01-09 06:56:23', 'Request send', '0000-00-00 00:00:00', 'Deposit', '0.0', 0, 0),
+(6, 'kamal', 'mainuddin', 5000, '2019-01-09 06:56:23', 'Success', '2019-01-10 09:48:02', 'Deposit', '0.0', 0, 1),
 (7, 'mainuddin', 'maxusint', 10000, '2019-01-09 07:40:57', 'Success', '2019-01-09 13:22:07', 'Deposit', '0.0', 0, 1),
 (8, 'mainuddin', 'maxusint', 10000, '2019-01-09 07:41:01', 'Success', '2019-01-08 00:00:00', 'Deposit', '0.0', 0, 1);
 
@@ -456,9 +446,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `name`, `username`, `email`, `mobile`, `password`, `club_id`, `reference`, `agent_id`, `district`, `upazilla`, `up`, `pin`, `total_balance`, `status`, `rank_id`, `create_date`, `type_id`) VALUES
 (1, 'Shahriar', 'maxusint', 'maxusint@gmail.com', '01723307372', '123', NULL, NULL, NULL, 'Dhaka', 'Uttara', 'Uttara', NULL, 29500, 'Active', NULL, '2019-01-05 07:11:03', 1),
-(2, 'Md Mainuddin', 'mainuddin', 'mainuddin@gmail.com', '01759108032', '123', NULL, NULL, NULL, 'Dhaka', '', '', NULL, 21000, 'Active', NULL, '2019-01-05 07:15:42', 2),
-(3, 'Kamal', 'kamal', 'kamal@gmail.com', '01833513131', '123', 2, NULL, NULL, 'Dhaka', '', '', NULL, 0, 'Active', NULL, '2019-01-05 07:20:13', 3),
-(6, 'Robi', 'robi', 'robi@gmail.com', '01856556699', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', 1, 0, 'Active', 1, '2019-01-05 07:46:49', 4),
+(2, 'Md Mainuddin', 'mainuddin', 'mainuddin@gmail.com', '01759108032', '123', NULL, NULL, NULL, 'Dhaka', '', '', NULL, 11000, 'Active', NULL, '2019-01-05 07:15:42', 2),
+(3, 'Kamal', 'kamal', 'kamal@gmail.com', '01833513131', '123', 2, NULL, NULL, 'Dhaka', '', '', NULL, 9700, 'Active', NULL, '2019-01-05 07:20:13', 3),
+(6, 'Robi', 'robi', 'robi@gmail.com', '01856556699', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', 1, 300, 'Active', 1, '2019-01-05 07:46:49', 4),
 (7, 'Hanif', 'hanif', 'hanif@gmail.com', '0185635321', '123', NULL, 'mainuddin', 3, 'Dhaka', '', '', 3, 0, 'Active', 1, '2019-01-05 08:32:53', 4),
 (8, 'Dadon', 'dadon', 'dadon@gmail.com', '01569759633', '123', NULL, 'kamal', 3, 'Dhaka', '', '', NULL, 0, 'Active', 1, '2019-01-05 08:43:48', 6),
 (9, 'Riaz', 'riaz', 'riaz@gmail.com', '01856556691', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', NULL, 0, 'Active', 1, '2019-01-06 07:33:42', 6);
@@ -479,7 +469,7 @@ CREATE TABLE `user_bet` (
   `bet_mode_id` int(6) DEFAULT NULL,
   `bet_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `result` varchar(30) DEFAULT 'Pending',
-  `result_update_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `result_update_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
   `is_seen` int(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -492,7 +482,8 @@ INSERT INTO `user_bet` (`user_id`, `bet_id`, `bet_option_id`, `bet_rate`, `bet_a
 (2, 2, 6, 1.5, 200, 300, 1, '2018-12-19 11:13:24', 'Pending', '0000-00-00 00:00:00', 1),
 (2, 3, 6, 1.5, 200, 300, 1, '2018-12-19 11:55:58', 'Pending', '0000-00-00 00:00:00', 1),
 (6, 42, 29, 1.5, 20, 30, 1, '2019-01-07 18:00:00', 'Pending', '0000-00-00 00:00:00', 1),
-(13, 36, 14, 1.6, 10, 16, 3, '2019-01-02 07:55:30', 'Pending', '0000-00-00 00:00:00', 1);
+(6, 44, 2, 1.6, 10, 16, 1, '2019-01-10 11:09:53', 'Won', '2019-01-10 12:37:31', 1),
+(13, 36, 14, 1.6, 10, 16, 3, '2019-01-10 07:55:30', 'Pending', '0000-00-00 00:00:00', 1);
 
 -- --------------------------------------------------------
 
@@ -679,7 +670,7 @@ ALTER TABLE `agent`
 -- AUTO_INCREMENT for table `bet`
 --
 ALTER TABLE `bet`
-  MODIFY `bet_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `bet_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `bet_mode`
@@ -691,7 +682,7 @@ ALTER TABLE `bet_mode`
 -- AUTO_INCREMENT for table `bet_rate`
 --
 ALTER TABLE `bet_rate`
-  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `club`
@@ -709,7 +700,7 @@ ALTER TABLE `commission`
 -- AUTO_INCREMENT for table `matches`
 --
 ALTER TABLE `matches`
-  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `profit_shared_user`

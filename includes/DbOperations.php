@@ -385,7 +385,7 @@
             }
             public function getUpcomingMatch(){
 
-                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time,tournament, match_type, match_format, status FROM matches WHERE DATE_FORMAT(date_time, '%Y-%m-%d') > CURDATE()");
+                $stmt = $this->con->prepare("SELECT id, team1,team2, date_time,tournament, match_type, match_format, status FROM matches WHERE date_time > CURRENT_TIMESTAMP");
                 //$stmt->bind_param("i",1);
                 $stmt->execute();
                 $stmt->bind_result($id, $team1, $team2, $date_time, $tournament, $match_type, $match_format, $status);
@@ -1812,9 +1812,16 @@
             return $users; 
         }
 
-
- 
+        public function isAlreadyPlaceBet($user_id){
+            $stmt = $this->con->prepare("SELECT user_id FROM user_bet WHERE user_id = ? AND DATE_FORMAT(bet_date, '%Y-%m-%d') = CURDATE()");
+            $stmt->bind_param("i",$user_id);
+            $stmt->execute();
+            $stmt->store_result();
+            return $stmt->affected_rows>0;
+        }
+        
     
+
 
 
             private function isPlaceBet($user_id, $bet_id){
