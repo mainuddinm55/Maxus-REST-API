@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.8.1
+-- version 4.8.3
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 12, 2019 at 06:41 AM
--- Server version: 10.1.33-MariaDB
--- PHP Version: 7.2.6
+-- Generation Time: Jan 20, 2019 at 07:49 AM
+-- Server version: 10.1.37-MariaDB
+-- PHP Version: 7.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -21,64 +21,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `maxusint`
 --
-
--- --------------------------------------------------------
-
---
--- Table structure for table `admin`
---
-
-CREATE TABLE `admin` (
-  `admin_id` int(6) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `username` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `mobile` varchar(15) NOT NULL,
-  `password` varchar(50) NOT NULL,
-  `district` varchar(50) NOT NULL,
-  `upazilla` varchar(50) DEFAULT NULL,
-  `up` varchar(50) DEFAULT NULL,
-  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `total_balance` double DEFAULT '0',
-  `status` int(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `admin`
---
-
-INSERT INTO `admin` (`admin_id`, `name`, `username`, `email`, `mobile`, `password`, `district`, `upazilla`, `up`, `create_date`, `total_balance`, `status`) VALUES
-(1, 'Maxus int', 'maxus', 'maxusint@gmail.com', '01828800184', '123', 'Dhaka', 'Dhaka', 'Dhaka', '2019-01-01 08:02:25', 0, 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `agent`
---
-
-CREATE TABLE `agent` (
-  `agent_id` int(6) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `username` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `mobile` varchar(15) NOT NULL,
-  `password` varchar(50) NOT NULL,
-  `club_id` int(6) DEFAULT NULL,
-  `district` varchar(50) NOT NULL,
-  `upazilla` varchar(50) DEFAULT NULL,
-  `up` varchar(50) DEFAULT NULL,
-  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `total_balance` double DEFAULT '0',
-  `status` int(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `agent`
---
-
-INSERT INTO `agent` (`agent_id`, `name`, `username`, `email`, `mobile`, `password`, `club_id`, `district`, `upazilla`, `up`, `create_date`, `total_balance`, `status`) VALUES
-(6, 'Md Mainuddin', 'mainuddin', 'mainuddinm5@gmail.com', '01822800728', '123', 13, 'Dhaka', 'Dhaka', 'Dhaka', '2018-12-26 07:26:56', 0, 1),
-(7, 'Md Mainuddin', 'mainuddinm5', 'mainuddinm55@gamil.com', '01822800727', '123', 13, 'Dhaka', '', '', '2018-12-26 07:48:19', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -103,7 +45,7 @@ CREATE TABLE `bet` (
 --
 
 INSERT INTO `bet` (`bet_id`, `question`, `started_date`, `match_id`, `bet_mode`, `status`, `result`, `status_update_date`, `right_answer`) VALUES
-(44, 'Who won the match?', '0000-00-00 00:00:00', 1, 1, 1, 'Finish', '2019-01-10 12:37:31', 2);
+(1, 'Who won the match?', '0000-00-00 00:00:00', 1, 1, 1, 'In play', '0000-00-00 00:00:00', 0);
 
 --
 -- Triggers `bet`
@@ -113,6 +55,8 @@ CREATE TRIGGER `update_user_bet_status` AFTER UPDATE ON `bet` FOR EACH ROW BEGIN
 IF NEW.result = 'Finish' THEN
 UPDATE user_bet SET result = 'Won', is_seen =0 WHERE bet_option_id = NEW.right_answer AND bet_id = OLD.bet_id;
 UPDATE user_bet SET result = 'Loss' , is_seen =0 WHERE bet_option_id != NEW.right_answer AND bet_id = OLD.bet_id;
+ELSEIF NEW.result = 'Cancel' THEN
+UPDATE user_bet SET result = 'Cancel', is_seen =0 WHERE bet_id = OLD.bet_id;
 END IF;
 END
 $$
@@ -150,8 +94,7 @@ CREATE TABLE `bet_mode` (
 
 INSERT INTO `bet_mode` (`mode_id`, `mode`) VALUES
 (1, 'Trade'),
-(2, 'Advanced'),
-(3, 'Both');
+(2, 'Advanced');
 
 -- --------------------------------------------------------
 
@@ -173,10 +116,10 @@ CREATE TABLE `bet_rate` (
 --
 
 INSERT INTO `bet_rate` (`id`, `bet_id`, `options`, `rate`, `user_type_id`, `bet_mode_id`) VALUES
-(1, 44, 'Dhaka', 1.6, 5, 1),
-(2, 44, 'Dhaka', 1.6, 4, 1),
-(3, 44, 'Chittagong', 1.5, 4, 1),
-(4, 44, 'Chittagong', 1.5, 5, 1);
+(1, 1, 'Comilla', 1.6, 5, 1),
+(2, 1, 'Rajshahi', 1.8, 5, 1),
+(3, 1, 'Comilla', 1.8, 4, 1),
+(4, 1, 'Rajshahi', 1.5, 4, 1);
 
 -- --------------------------------------------------------
 
@@ -198,34 +141,6 @@ CREATE TABLE `bet_rate_view` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `club`
---
-
-CREATE TABLE `club` (
-  `club_id` int(6) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `username` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `mobile` varchar(15) NOT NULL,
-  `password` varchar(50) NOT NULL,
-  `district` varchar(50) NOT NULL,
-  `upazilla` varchar(50) DEFAULT NULL,
-  `up` varchar(50) DEFAULT NULL,
-  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `total_balance` float DEFAULT '0',
-  `status` int(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `club`
---
-
-INSERT INTO `club` (`club_id`, `name`, `username`, `email`, `mobile`, `password`, `district`, `upazilla`, `up`, `create_date`, `total_balance`, `status`) VALUES
-(13, 'Md Mainuddin', 'mainuddinm55', 'mainuddinm55@gmail.com', '01822800727', '123', 'Dhaka', '', '', '2018-12-26 07:25:59', 0, 1);
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `commission`
 --
 
@@ -240,6 +155,16 @@ CREATE TABLE `commission` (
   `is_seen` int(1) DEFAULT '0',
   `purpose` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Triggers `commission`
+--
+DELIMITER $$
+CREATE TRIGGER `send_notification_after_commission` AFTER INSERT ON `commission` FOR EACH ROW BEGIN
+INSERT INTO notification (notification.username, notification.body, notification.type, notification.type_id) VALUES  (NEW.username, Concat("Got ", NEW.amount,"$ ",lower(NEW.purpose)), "Commission",New.comm_id);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -263,7 +188,23 @@ CREATE TABLE `matches` (
 --
 
 INSERT INTO `matches` (`id`, `team1`, `team2`, `date_time`, `tournament`, `match_type`, `match_format`, `status`) VALUES
-(1, 'Dhaka', 'Chittagong', '2019-01-11 06:00:00', 'Bangladesh Premier League (BPL)', 'Cricket', 'T20', 1);
+(1, 'Comilla', 'Rakshahi', '2019-01-21 07:30:00', 'Bangladesh Premier League -2019', 'Cricket', 'T20', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notification`
+--
+
+CREATE TABLE `notification` (
+  `id` int(11) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `body` varchar(300) DEFAULT NULL,
+  `type` varchar(50) DEFAULT NULL,
+  `type_id` int(11) DEFAULT NULL,
+  `notice_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `seen` int(11) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -292,7 +233,8 @@ INSERT INTO `profit_shared_user` (`user_id`, `name`, `username`, `email`, `mobil
 (5, 'mainuddin', 'mainuddin567', 'mainuddinm@gmail.com', '64521561', 'dhaka', 'dhaka', 'dhaka', 20),
 (6, 'Mainuddin', 'mainuddin120', 'mainuddin54@gmail.com', '01822800725', 'Gazipur', NULL, NULL, NULL),
 (8, 'kamal', 'kamal3', 'kamal@gmail.com', '12345678', 'Dhaka', 'Savar', 'Cantonment', 32),
-(9, 'badon', 'badon', 'badon@gmail.com', '1654654', 'dhaka', 'dhaka', 'dhaka', 50);
+(9, 'badon', 'badon', 'badon@gmail.com', '1654654', 'dhaka', 'dhaka', 'dhaka', 50),
+(10, 'Md Mainuddin', 'mainuddinm5', 'mainuddin@gmail.com', '0185689666', 'Gazipur', 'Sadar', 'Kashimpur', 20);
 
 -- --------------------------------------------------------
 
@@ -332,17 +274,21 @@ CREATE TABLE `security_pin` (
   `pin` varchar(30) NOT NULL,
   `user_type_id` int(6) DEFAULT NULL,
   `used` int(1) DEFAULT '0',
-  `validity` int(6) DEFAULT '180'
+  `validity` int(6) DEFAULT '180',
+  `owner_id` int(11) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `security_pin`
 --
 
-INSERT INTO `security_pin` (`id`, `pin`, `user_type_id`, `used`, `validity`) VALUES
-(1, '102011', 1, 1, 180),
-(2, '102012', 2, 1, 180),
-(3, '102013', 4, 1, 180);
+INSERT INTO `security_pin` (`id`, `pin`, `user_type_id`, `used`, `validity`, `owner_id`) VALUES
+(1, '102011', 1, 1, 180, 0),
+(2, '102012', 2, 1, 180, 0),
+(3, '102013', 4, 1, 180, 0),
+(4, '102100', 1, 1, 180, 0),
+(6, '102122', 1, 1, 180, 0),
+(7, '122012', 1, 0, 180, 1);
 
 -- --------------------------------------------------------
 
@@ -365,53 +311,16 @@ CREATE TABLE `transaction` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Dumping data for table `transaction`
+-- Triggers `transaction`
 --
-
-INSERT INTO `transaction` (`id`, `from_username`, `to_username`, `amount`, `trans_date`, `status`, `status_update_date`, `trans_type`, `trans_charge`, `from_user_seen`, `to_user_seen`) VALUES
-(2, 'mainuddin', 'kamal', 500, '2018-12-18 09:42:04', 'Success', '2018-12-31 18:00:00', 'Withdraw', '1', 0, 1),
-(3, 'robi', 'kamal', 500, '2019-01-07 08:44:05', 'Success', '2019-01-10 09:49:34', 'Deposit', '0.0', 0, 1),
-(4, 'robi', 'kamal', 200, '2019-01-07 11:48:51', 'Success', '2019-01-10 09:49:48', 'Withdraw', '0.0', 0, 1),
-(5, 'robi', 'hanif', 20, '2019-01-07 13:09:22', 'Request send', '0000-00-00 00:00:00', 'Balance Transfer', '0.1', 0, 0),
-(6, 'kamal', 'mainuddin', 5000, '2019-01-09 06:56:23', 'Success', '2019-01-10 09:48:02', 'Deposit', '0.0', 0, 1),
-(7, 'mainuddin', 'maxusint', 10000, '2019-01-09 07:40:57', 'Success', '2019-01-09 13:22:07', 'Deposit', '0.0', 0, 1),
-(8, 'mainuddin', 'maxusint', 10000, '2019-01-09 07:41:01', 'Success', '2019-01-08 00:00:00', 'Deposit', '0.0', 0, 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `user`
---
-
-CREATE TABLE `user` (
-  `user_id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `username` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `mobile` varchar(15) NOT NULL,
-  `password` varchar(50) NOT NULL,
-  `reference` varchar(100) NOT NULL,
-  `agent_id` int(6) DEFAULT NULL,
-  `district` varchar(50) NOT NULL,
-  `upazilla` varchar(50) DEFAULT NULL,
-  `up` varchar(50) DEFAULT NULL,
-  `type_id` int(6) DEFAULT NULL,
-  `pin_id` int(6) DEFAULT NULL,
-  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `validity_date` datetime DEFAULT NULL,
-  `trade_balance` float DEFAULT NULL,
-  `advanced_balance` float DEFAULT '0',
-  `status` int(1) DEFAULT '1',
-  `rank_id` int(6) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `user`
---
-
-INSERT INTO `user` (`user_id`, `name`, `username`, `email`, `mobile`, `password`, `reference`, `agent_id`, `district`, `upazilla`, `up`, `type_id`, `pin_id`, `create_date`, `validity_date`, `trade_balance`, `advanced_balance`, `status`, `rank_id`) VALUES
-(13, 'Kamal', 'kamal', 'kamal@gmail.com', '01833513131', '123', 'mainuddin', 6, 'Dhaka', '', '', 1, 1, '2019-01-01 12:28:46', NULL, 30, 0, 1, 1),
-(15, 'Robi', 'robi', 'robi@gmail.com', '0185230120', '123', 'mainuddin', 6, 'Dhaka', '', '', 2, 2, '2019-01-01 12:38:52', NULL, 100, 0, 1, 1);
+DELIMITER $$
+CREATE TRIGGER `transaction_notification` AFTER UPDATE ON `transaction` FOR EACH ROW BEGIN
+IF NEW.status = 'Success' THEN
+INSERT INTO notification (notification.username, notification.body, notification.type, notification.type_id) VALUES(New.from_username, CONCAT(NEW.trans_type," ",NEW.amount,"$ from ",NEW.to_username," ",lower(NEW.status)),'Transaction',NEW.id);
+END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -437,21 +346,26 @@ CREATE TABLE `users` (
   `status` varchar(20) DEFAULT 'Active',
   `rank_id` int(6) DEFAULT NULL,
   `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `type_id` int(6) DEFAULT NULL
+  `type_id` int(6) DEFAULT NULL,
+  `ref_count` int(10) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `name`, `username`, `email`, `mobile`, `password`, `club_id`, `reference`, `agent_id`, `district`, `upazilla`, `up`, `pin`, `total_balance`, `status`, `rank_id`, `create_date`, `type_id`) VALUES
-(1, 'Shahriar', 'maxusint', 'maxusint@gmail.com', '01723307372', '123', NULL, NULL, NULL, 'Dhaka', 'Uttara', 'Uttara', NULL, 29500, 'Active', NULL, '2019-01-05 07:11:03', 1),
-(2, 'Md Mainuddin', 'mainuddin', 'mainuddin@gmail.com', '01759108032', '123', NULL, NULL, NULL, 'Dhaka', '', '', NULL, 11000, 'Active', NULL, '2019-01-05 07:15:42', 2),
-(3, 'Kamal', 'kamal', 'kamal@gmail.com', '01833513131', '123', 2, NULL, NULL, 'Dhaka', '', '', NULL, 9700, 'Active', NULL, '2019-01-05 07:20:13', 3),
-(6, 'Robi', 'robi', 'robi@gmail.com', '01856556699', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', 1, 300, 'Active', 1, '2019-01-05 07:46:49', 4),
-(7, 'Hanif', 'hanif', 'hanif@gmail.com', '0185635321', '123', NULL, 'mainuddin', 3, 'Dhaka', '', '', 3, 0, 'Active', 1, '2019-01-05 08:32:53', 4),
-(8, 'Dadon', 'dadon', 'dadon@gmail.com', '01569759633', '123', NULL, 'kamal', 3, 'Dhaka', '', '', NULL, 0, 'Active', 1, '2019-01-05 08:43:48', 6),
-(9, 'Riaz', 'riaz', 'riaz@gmail.com', '01856556691', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', NULL, 0, 'Active', 1, '2019-01-06 07:33:42', 6);
+INSERT INTO `users` (`user_id`, `name`, `username`, `email`, `mobile`, `password`, `club_id`, `reference`, `agent_id`, `district`, `upazilla`, `up`, `pin`, `total_balance`, `status`, `rank_id`, `create_date`, `type_id`, `ref_count`) VALUES
+(1, 'Shahriar', 'maxusint', 'maxusint@gmail.com', '01723307372', '123', NULL, NULL, NULL, 'Dhaka', 'Uttara', 'Uttara', NULL, 29870, 'Active', NULL, '2019-01-05 07:11:03', 1, 0),
+(2, 'Md Mainuddin', 'mainuddin', 'mainuddin@gmail.com', '01759108032', '123', NULL, NULL, NULL, 'Dhaka', '', '', NULL, 11000.2, 'Active', NULL, '2019-01-05 07:15:42', 2, 0),
+(3, 'Kamal', 'kamal', 'kamal@gmail.com', '01833513131', '123', 2, NULL, NULL, 'Dhaka', '', '', NULL, 9700.2, 'Active', NULL, '2019-01-05 07:20:13', 3, 0),
+(6, 'Robi', 'robi', 'robi@gmail.com', '01856556699', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', 1, 250.85, 'Active', 1, '2019-01-05 07:46:49', 4, 2),
+(7, 'Hanif', 'hanif', 'hanif@gmail.com', '0185635321', '123', NULL, 'mainuddin', 3, 'Dhaka', '', '', 3, 480, 'Active', 1, '2019-01-05 08:32:53', 4, 0),
+(8, 'Dadon', 'dadon', 'dadon@gmail.com', '01569759633', '123', NULL, 'kamal', 3, 'Dhaka', '', '', NULL, 0, 'Active', 1, '2019-01-05 08:43:48', 6, 0),
+(9, 'Riaz', 'riaz', 'riaz@gmail.com', '01856556691', '123', NULL, 'mainuddin', 3, 'Dhaka', 'Dhaka', 'Dhaka', NULL, 17, 'Active', 1, '2019-01-06 07:33:42', 6, 0),
+(52, 'Samir', 'samir', 'samir@gmail.com', '0185696365', '123', NULL, 'robi', 3, 'Dhaka', '', '', NULL, 66, 'Active', 1, '2019-01-13 12:27:27', 6, 0),
+(53, 'Sarif', 'sarif', 'sarif@gmail.com', '0185696364', '123', NULL, 'robi', 6, 'Dhaka', '', '', NULL, 0, 'Active', 1, '2019-01-13 12:28:28', 6, 0),
+(54, 'Md Shawon', 'shawon', 'shawon@gmail.com', '01523678969', '123', 2, NULL, NULL, 'Dhaka', 'Motijeel', 'Road  - 3', NULL, 0, 'Active', NULL, '2019-01-17 08:47:04', 3, 0),
+(55, 'Shuashanto', 'sushan', 'sushan@gmail.com', '0186659658', '123', 2, NULL, NULL, 'Dhaka', 'Mirpur', '', NULL, 0, 'Active', NULL, '2019-01-17 10:16:28', 3, 0);
 
 -- --------------------------------------------------------
 
@@ -474,16 +388,35 @@ CREATE TABLE `user_bet` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Dumping data for table `user_bet`
+-- Triggers `user_bet`
 --
+DELIMITER $$
+CREATE TRIGGER `balance_transfer_after_bet_finish` AFTER UPDATE ON `user_bet` FOR EACH ROW BEGIN
+IF NEW.result = 'Won' THEN
+UPDATE users SET users.total_balance = users.total_balance + NEW.bet_return_amount WHERE users.user_id = NEW.user_id;
 
-INSERT INTO `user_bet` (`user_id`, `bet_id`, `bet_option_id`, `bet_rate`, `bet_amount`, `bet_return_amount`, `bet_mode_id`, `bet_date`, `result`, `result_update_date`, `is_seen`) VALUES
-(1, 1, 1, 1.8, 500, 900, 1, '2018-12-13 12:20:02', 'Pending', '0000-00-00 00:00:00', 1),
-(2, 2, 6, 1.5, 200, 300, 1, '2018-12-19 11:13:24', 'Pending', '0000-00-00 00:00:00', 1),
-(2, 3, 6, 1.5, 200, 300, 1, '2018-12-19 11:55:58', 'Pending', '0000-00-00 00:00:00', 1),
-(6, 42, 29, 1.5, 20, 30, 1, '2019-01-07 18:00:00', 'Pending', '0000-00-00 00:00:00', 1),
-(6, 44, 2, 1.6, 10, 16, 1, '2019-01-10 11:09:53', 'Won', '2019-01-10 12:37:31', 1),
-(13, 36, 14, 1.6, 10, 16, 3, '2019-01-10 07:55:30', 'Pending', '0000-00-00 00:00:00', 1);
+INSERT INTO notification(notification.username, notification.body, notification.type, notification.type_id) VALUES ((SELECT users.username FROM users WHERE users.user_id = New.user_id),'Congratulations, You won the bet', 'Bet Result', NEW.bet_id);
+
+ELSEIF NEW.result = 'Cancel' THEN
+UPDATE users SET users.total_balance = users.total_balance + NEW.bet_amount WHERE users.user_id = NEW.user_id;
+
+INSERT INTO notification(notification.username, notification.body, notification.type, notification.type_id) VALUES ((SELECT users.username FROM users WHERE users.user_id = New.user_id),'Sorry, The bet was canceled', 'Bet Result', NEW.bet_id);
+
+ELSEIF NEW.result = 'Loss' THEN
+INSERT INTO notification(notification.username, notification.body, notification.type, notification.type_id) VALUES ((SELECT users.username FROM users WHERE users.user_id = New.user_id),'Opps, You loss the bet', 'Bet Result', NEW.bet_id);
+END IF;
+
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `send_notification_after_finish_bet` BEFORE UPDATE ON `user_bet` FOR EACH ROW BEGIN
+IF NEW.result = 'Won' THEN
+INSERT INTO notification(notification.username, notification.body, notification.type, notification.type_id) VALUES ((SELECT users.username FROM users WHERE users.user_id = New.user_id),'Congratulations you won the bet', 'Bet Result', NEW.bet_id);
+END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -531,25 +464,6 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 
 --
--- Indexes for table `admin`
---
-ALTER TABLE `admin`
-  ADD PRIMARY KEY (`admin_id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `mobile` (`mobile`);
-
---
--- Indexes for table `agent`
---
-ALTER TABLE `agent`
-  ADD PRIMARY KEY (`agent_id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `mobile` (`mobile`),
-  ADD KEY `agent_club_id_fk` (`club_id`);
-
---
 -- Indexes for table `bet`
 --
 ALTER TABLE `bet`
@@ -572,15 +486,6 @@ ALTER TABLE `bet_rate`
   ADD KEY `bet_rate_bet_mode_id_fk` (`bet_mode_id`);
 
 --
--- Indexes for table `club`
---
-ALTER TABLE `club`
-  ADD PRIMARY KEY (`club_id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `mobile` (`mobile`);
-
---
 -- Indexes for table `commission`
 --
 ALTER TABLE `commission`
@@ -591,6 +496,12 @@ ALTER TABLE `commission`
 -- Indexes for table `matches`
 --
 ALTER TABLE `matches`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `notification`
+--
+ALTER TABLE `notification`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -622,27 +533,13 @@ ALTER TABLE `transaction`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `user`
---
-ALTER TABLE `user`
-  ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `mobile` (`mobile`),
-  ADD KEY `user_agent_id_fk` (`agent_id`),
-  ADD KEY `user_type_id_fk` (`type_id`),
-  ADD KEY `user_rank_id_fk` (`rank_id`),
-  ADD KEY `user_pin_id_fk` (`pin_id`);
-
---
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `username` (`username`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `mobile` (`mobile`),
-  ADD KEY `user_agent_id` (`agent_id`);
+  ADD UNIQUE KEY `mobile` (`mobile`);
 
 --
 -- Indexes for table `user_bet`
@@ -661,34 +558,22 @@ ALTER TABLE `user_type`
 --
 
 --
--- AUTO_INCREMENT for table `agent`
---
-ALTER TABLE `agent`
-  MODIFY `agent_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
 -- AUTO_INCREMENT for table `bet`
 --
 ALTER TABLE `bet`
-  MODIFY `bet_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `bet_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `bet_mode`
 --
 ALTER TABLE `bet_mode`
-  MODIFY `mode_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `mode_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `bet_rate`
 --
 ALTER TABLE `bet_rate`
   MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `club`
---
-ALTER TABLE `club`
-  MODIFY `club_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `commission`
@@ -703,10 +588,16 @@ ALTER TABLE `matches`
   MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `notification`
+--
+ALTER TABLE `notification`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `profit_shared_user`
 --
 ALTER TABLE `profit_shared_user`
-  MODIFY `user_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `user_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `rank`
@@ -718,25 +609,19 @@ ALTER TABLE `rank`
 -- AUTO_INCREMENT for table `security_pin`
 --
 ALTER TABLE `security_pin`
-  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `transaction`
 --
 ALTER TABLE `transaction`
-  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `user`
---
-ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `user_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `user_type`
@@ -747,12 +632,6 @@ ALTER TABLE `user_type`
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `agent`
---
-ALTER TABLE `agent`
-  ADD CONSTRAINT `agent_club_id_fk` FOREIGN KEY (`club_id`) REFERENCES `club` (`club_id`);
 
 --
 -- Constraints for table `bet`
@@ -772,22 +651,7 @@ ALTER TABLE `bet_rate`
 -- Constraints for table `commission`
 --
 ALTER TABLE `commission`
-  ADD CONSTRAINT `comm_from_user_id_fk` FOREIGN KEY (`from_user_id`) REFERENCES `user` (`user_id`);
-
---
--- Constraints for table `user`
---
-ALTER TABLE `user`
-  ADD CONSTRAINT `user_agent_id_fk` FOREIGN KEY (`agent_id`) REFERENCES `agent` (`agent_id`),
-  ADD CONSTRAINT `user_pin_id_fk` FOREIGN KEY (`pin_id`) REFERENCES `security_pin` (`id`),
-  ADD CONSTRAINT `user_rank_id_fk` FOREIGN KEY (`rank_id`) REFERENCES `rank` (`rank_id`),
-  ADD CONSTRAINT `user_type_id_fk` FOREIGN KEY (`type_id`) REFERENCES `user_type` (`id`);
-
---
--- Constraints for table `users`
---
-ALTER TABLE `users`
-  ADD CONSTRAINT `user_agent_id` FOREIGN KEY (`agent_id`) REFERENCES `users` (`user_id`);
+  ADD CONSTRAINT `comm_from_user_id_fk` FOREIGN KEY (`from_user_id`) REFERENCES `users` (`user_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
